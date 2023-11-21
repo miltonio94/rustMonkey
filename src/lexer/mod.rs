@@ -12,23 +12,28 @@ pub struct Lexer {
 impl Lexer {
     pub fn new(input: String) -> Self {
         // FIXME: error handling for the string when it contains non ASCII chars
+        let input = input.as_bytes().to_vec();
         Self {
-            input: input.as_bytes().to_vec(),
+            ch: input[0],
+            input,
             position: 0,
-            readPosition: 0,
-            ch: b'\0',
+            readPosition: 1,
         }
     }
+
     pub fn read_char(&mut self) {
         if self.readPosition >= self.input.len() {
             self.ch = b'\0'
         } else {
-            self.ch = self.input[l.readPosition]
+            self.ch = self.input[self.readPosition]
         }
         self.position = self.readPosition;
         self.readPosition += 1;
     }
-    pub fn nextToken(&mut self) -> Token {
-        //
+
+    pub fn next_token(&mut self) -> Token {
+        let tok = Token::new(self.ch);
+        self.read_char();
+        tok
     }
 }
