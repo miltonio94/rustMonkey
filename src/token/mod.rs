@@ -1,11 +1,13 @@
+use std::collections::HashMap;
 use std::{fmt::Display, vec};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Token {
     Illegal,
     Eof,
 
     // Identifier + literals
+    // TODO: Change from Vec<u8> to &[u8]
     Ident(vec::Vec<u8>),
     Int(vec::Vec<u8>),
 
@@ -42,19 +44,14 @@ pub enum Token {
 }
 
 impl Token {
-    pub fn new(ch: u8) -> Self {
-        match ch {
-            b'=' => Self::Assign,
-            b';' => Self::Semicolon,
-            b'(' => Self::LParen,
-            b')' => Self::RParen,
-            b',' => Self::Comma,
-            b'+' => Self::Plus,
-            b'{' => Self::LBrace,
-            b'}' => Self::RBrace,
-            b'\0' => Self::Eof,
-            _ => Self::Illegal,
-        }
+    pub fn lookup_ident(ident: &[u8]) -> Token {
+        let ident = String::from_utf8(ident.to_vec()).unwrap_or_default();
+        let keywords = HashMap::from([
+            ("fn".to_string(), Self::Function),
+            ("let".to_string(), Self::Let),
+        ]);
+
+        keywords.get(&ident).unwrap_or(&Self::Illegal).clone()
     }
 }
 
@@ -64,9 +61,20 @@ impl Display for Token {
             Self::Illegal => write!(f, ""),
             Self::Eof => write!(f, ""),
 
-            Self::Ident(ident) => write!(f, ""),
-            Self::Int(number) => write!(f, ""),
-
+            Self::Ident(ident) => write!(
+                f,
+                "{}",
+                String::from_utf8(ident.to_vec())
+                    .unwrap_or_default()
+                    .to_string()
+            ),
+            Self::Int(number) => write!(
+                f,
+                "{}",
+                String::from_utf8(number.to_vec())
+                    .unwrap_or_default()
+                    .to_string()
+            ),
             Self::Assign => write!(f, "="),
             Self::Plus => write!(f, "+"),
             Self::Minus => write!(f, "-"),
