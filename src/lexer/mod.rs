@@ -60,7 +60,6 @@ impl Lexer {
             b'(' => Token::LParen,
             b')' => Token::RParen,
             b',' => Token::Comma,
-            b'+' => Token::Plus,
             b'{' => Token::LBrace,
             b'}' => Token::RBrace,
 
