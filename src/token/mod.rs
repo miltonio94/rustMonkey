@@ -43,16 +43,24 @@ pub enum Token {
     Return,
 }
 
-impl Token {
-    pub fn lookup_ident(ident: &[u8]) -> Token {
-        let ident = String::from_utf8(ident.to_vec()).unwrap_or_default();
-        let keywords = HashMap::from([
-            ("fn".to_string(), Self::Function),
-            ("let".to_string(), Self::Let),
-        ]);
+pub fn lookup_keyword(ident: &[u8]) -> Token {
+    let ident = String::from_utf8(ident.to_vec()).unwrap_or_default();
+    let keywords = HashMap::from([
+        ("fn".to_string(), Token::Function),
+        ("let".to_string(), Token::Let),
+    ]);
 
-        keywords.get(&ident).unwrap_or(&Self::Illegal).clone()
-    }
+    keywords.get(&ident).unwrap_or(&Token::Illegal).clone()
+}
+
+pub fn is_keyword(ident: &[u8]) -> bool {
+    let ident = String::from_utf8(ident.to_vec()).unwrap_or_default();
+    let keywords = HashMap::from([
+        ("fn".to_string(), Token::Function),
+        ("let".to_string(), Token::Let),
+    ]);
+
+    keywords.get(&ident).is_some()
 }
 
 impl Display for Token {

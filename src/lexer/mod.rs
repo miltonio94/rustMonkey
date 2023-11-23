@@ -1,6 +1,6 @@
 use std::vec;
 
-use crate::token::Token;
+use crate::token::{self, Token};
 
 pub struct Lexer {
     input: vec::Vec<u8>,
@@ -45,7 +45,12 @@ impl Lexer {
             b'\0' => Token::Eof,
             _ => {
                 if is_letter(self.ch) {
-                    Token::lookup_ident(self.read_identifier())
+                    let chunck = self.read_identifier();
+                    if token::is_keyword(chunck) {
+                        token::lookup_keyword(chunck)
+                    } else {
+                        Token::Ident(chunck.to_vec())
+                    }
                 } else if is_digit(self.ch) {
                     Token::Int(self.read_number().to_vec())
                 } else {
