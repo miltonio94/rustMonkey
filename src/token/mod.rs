@@ -89,7 +89,7 @@ impl Display for Token {
             Self::Bang => write!(f, "!"),
             Self::Asterisk => write!(f, "*"),
             Self::Slash => write!(f, "/"),
-            Self::Eq => write!(f, "="),
+            Self::Eq => write!(f, "=="),
             Self::NotEq => write!(f, "!="),
 
             Self::Lt => write!(f, "<"),

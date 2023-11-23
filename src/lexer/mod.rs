@@ -35,6 +35,13 @@ impl Lexer {
 
         let tok = match self.ch {
             b'=' => Token::Assign,
+            b'+' => Token::Plus,
+            b'-' => Token::Minus,
+            b'!' => Token::Bang,
+            b'*' => Token::Asterisk,
+            b'/' => Token::Slash,
+            b'<' => Token::Lt,
+            b'>' => Token::Gt,
             b';' => Token::Semicolon,
             b'(' => Token::LParen,
             b')' => Token::RParen,
@@ -42,6 +49,7 @@ impl Lexer {
             b'+' => Token::Plus,
             b'{' => Token::LBrace,
             b'}' => Token::RBrace,
+
             b'\0' => Token::Eof,
             _ => {
                 if is_letter(self.ch) {

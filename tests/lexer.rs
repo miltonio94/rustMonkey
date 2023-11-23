@@ -16,6 +16,8 @@ let add = fn(x, y){
 };
 
 let result = add(five, ten);
+!-/*5;
+5 < 10 > 5;
 "#
     .to_string();
 
@@ -164,14 +166,60 @@ let result = add(five, ten);
             expected_type: Token::Semicolon,
             expected_literal: ";".to_string(),
         },
+        Test {
+            expected_type: Token::Bang,
+            expected_literal: "!".to_string(),
+        },
+        Test {
+            expected_type: Token::Minus,
+            expected_literal: "-".to_string(),
+        },
+        Test {
+            expected_type: Token::Slash,
+            expected_literal: "/".to_string(),
+        },
+        Test {
+            expected_type: Token::Asterisk,
+            expected_literal: "*".to_string(),
+        },
+        Test {
+            expected_type: Token::Int("5".to_string().into_bytes()),
+            expected_literal: "5".to_string(),
+        },
+        Test {
+            expected_type: Token::Semicolon,
+            expected_literal: ";".to_string(),
+        },
+        Test {
+            expected_type: Token::Int("5".to_string().into_bytes()),
+            expected_literal: "5".to_string(),
+        },
+        Test {
+            expected_type: Token::Lt,
+            expected_literal: "<".to_string(),
+        },
+        Test {
+            expected_type: Token::Int("10".to_string().into_bytes()),
+            expected_literal: "10".to_string(),
+        },
+        Test {
+            expected_type: Token::Gt,
+            expected_literal: ">".to_string(),
+        },
+        Test {
+            expected_type: Token::Int("5".to_string().into_bytes()),
+            expected_literal: "5".to_string(),
+        },
+        Test {
+            expected_type: Token::Semicolon,
+            expected_literal: ";".to_string(),
+        },
     ];
 
     let mut l = lexer::Lexer::new(input);
 
     for (i, tt) in tests.iter().enumerate() {
         let tok = l.next_token();
-
-        println!("tok: {}", tok);
 
         if tok != tt.expected_type {
             panic!(
