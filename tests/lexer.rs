@@ -13,7 +13,7 @@ let five = 5;
 let ten = 10;
 let add = fn(x, y){
    x + y;
-}
+};
 
 let result = add(five, ten);
 "#
@@ -77,7 +77,7 @@ let result = add(five, ten);
             expected_literal: "fn".to_string(),
         },
         Test {
-            expected_type: Token::LBrace,
+            expected_type: Token::LParen,
             expected_literal: "(".to_string(),
         },
         Test {
@@ -93,7 +93,7 @@ let result = add(five, ten);
             expected_literal: "y".to_string(),
         },
         Test {
-            expected_type: Token::RBrace,
+            expected_type: Token::RParen,
             expected_literal: ")".to_string(),
         },
         Test {
@@ -141,7 +141,7 @@ let result = add(five, ten);
             expected_literal: "add".to_string(),
         },
         Test {
-            expected_type: Token::LBrace,
+            expected_type: Token::LParen,
             expected_literal: "(".to_string(),
         },
         Test {
@@ -157,7 +157,7 @@ let result = add(five, ten);
             expected_literal: "ten".to_string(),
         },
         Test {
-            expected_type: Token::RBrace,
+            expected_type: Token::RParen,
             expected_literal: ")".to_string(),
         },
         Test {
@@ -170,6 +170,8 @@ let result = add(five, ten);
 
     for (i, tt) in tests.iter().enumerate() {
         let tok = l.next_token();
+
+        println!("tok: {}", tok);
 
         if tok != tt.expected_type {
             panic!(

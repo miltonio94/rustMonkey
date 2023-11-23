@@ -47,12 +47,12 @@ impl Lexer {
                 if is_letter(self.ch) {
                     let chunck = self.read_identifier();
                     if token::is_keyword(chunck) {
-                        token::lookup_keyword(chunck)
+                        return token::lookup_keyword(chunck);
                     } else {
-                        Token::Ident(chunck.to_vec())
+                        return Token::Ident(chunck.to_vec());
                     }
                 } else if is_digit(self.ch) {
-                    Token::Int(self.read_number().to_vec())
+                    return Token::Int(self.read_number().to_vec());
                 } else {
                     return Token::Illegal;
                 }
@@ -75,7 +75,7 @@ impl Lexer {
         while is_digit(self.ch) {
             self.read_char();
         }
-        &self.input[position..self.position]
+        &self.input[position..(self.position)]
     }
 
     fn skip_whitespace(&mut self) {
