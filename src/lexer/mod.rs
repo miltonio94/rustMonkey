@@ -34,10 +34,24 @@ impl Lexer {
         self.skip_whitespace();
 
         let tok = match self.ch {
-            b'=' => Token::Assign,
+            b'=' => {
+                if self.peek_char() == b'=' {
+                    self.read_char();
+                    Token::Eq
+                } else {
+                    Token::Assign
+                }
+            }
             b'+' => Token::Plus,
             b'-' => Token::Minus,
-            b'!' => Token::Bang,
+            b'!' => {
+                if self.peek_char() == b'=' {
+                    self.read_char();
+                    Token::NotEq
+                } else {
+                    Token::Bang
+                }
+            }
             b'*' => Token::Asterisk,
             b'/' => Token::Slash,
             b'<' => Token::Lt,
@@ -89,6 +103,14 @@ impl Lexer {
     fn skip_whitespace(&mut self) {
         while self.ch == b' ' || self.ch == b'\t' || self.ch == b'\n' || self.ch == b'\r' {
             self.read_char();
+        }
+    }
+
+    fn peek_char(&mut self) -> u8 {
+        if self.read_position >= self.input.len() {
+            b'\0'
+        } else {
+            self.input[self.read_position]
         }
     }
 }

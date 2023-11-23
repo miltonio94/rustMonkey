@@ -43,6 +43,7 @@ pub enum Token {
     Return,
 }
 
+// TODO: refactor this function to not use a hash and return Some<Token>
 pub fn lookup_keyword(ident: &[u8]) -> Token {
     let ident = String::from_utf8(ident.to_vec()).unwrap_or_default();
     let keywords = HashMap::from([
@@ -58,6 +59,7 @@ pub fn lookup_keyword(ident: &[u8]) -> Token {
     keywords.get(&ident).unwrap_or(&Token::Illegal).clone()
 }
 
+// TODO: once the above refactor is done we can remove this function
 pub fn is_keyword(ident: &[u8]) -> bool {
     let ident = String::from_utf8(ident.to_vec()).unwrap_or_default();
     let keywords = HashMap::from([

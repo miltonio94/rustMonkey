@@ -24,6 +24,9 @@ if (5 < 10) {
 } else {
     return false;
 }
+
+10 == 10;
+10 != 9;
 "#
     .to_string();
 
@@ -287,6 +290,38 @@ if (5 < 10) {
         Test {
             expected_type: Token::RBrace,
             expected_literal: "}".to_string(),
+        },
+        Test {
+            expected_type: Token::Int("10".to_string().into_bytes()),
+            expected_literal: "10".to_string(),
+        },
+        Test {
+            expected_type: Token::Eq,
+            expected_literal: "==".to_string(),
+        },
+        Test {
+            expected_type: Token::Int("10".to_string().into_bytes()),
+            expected_literal: "10".to_string(),
+        },
+        Test {
+            expected_type: Token::Semicolon,
+            expected_literal: ";".to_string(),
+        },
+        Test {
+            expected_type: Token::Int("10".to_string().into_bytes()),
+            expected_literal: "10".to_string(),
+        },
+        Test {
+            expected_type: Token::NotEq,
+            expected_literal: "!=".to_string(),
+        },
+        Test {
+            expected_type: Token::Int("9".to_string().into_bytes()),
+            expected_literal: "9".to_string(),
+        },
+        Test {
+            expected_type: Token::Semicolon,
+            expected_literal: ";".to_string(),
         },
     ];
 
