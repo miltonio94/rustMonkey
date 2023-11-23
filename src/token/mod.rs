@@ -48,6 +48,11 @@ pub fn lookup_keyword(ident: &[u8]) -> Token {
     let keywords = HashMap::from([
         ("fn".to_string(), Token::Function),
         ("let".to_string(), Token::Let),
+        ("true".to_string(), Token::True),
+        ("false".to_string(), Token::False),
+        ("if".to_string(), Token::If),
+        ("else".to_string(), Token::Else),
+        ("return".to_string(), Token::Return),
     ]);
 
     keywords.get(&ident).unwrap_or(&Token::Illegal).clone()
@@ -58,6 +63,11 @@ pub fn is_keyword(ident: &[u8]) -> bool {
     let keywords = HashMap::from([
         ("fn".to_string(), Token::Function),
         ("let".to_string(), Token::Let),
+        ("true".to_string(), Token::True),
+        ("false".to_string(), Token::False),
+        ("if".to_string(), Token::If),
+        ("else".to_string(), Token::Else),
+        ("return".to_string(), Token::Return),
     ]);
 
     keywords.get(&ident).is_some()

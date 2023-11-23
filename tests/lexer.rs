@@ -18,6 +18,12 @@ let add = fn(x, y){
 let result = add(five, ten);
 !-/*5;
 5 < 10 > 5;
+
+if (5 < 10) {
+    return true;
+} else {
+    return false;
+}
 "#
     .to_string();
 
@@ -213,6 +219,74 @@ let result = add(five, ten);
         Test {
             expected_type: Token::Semicolon,
             expected_literal: ";".to_string(),
+        },
+        Test {
+            expected_type: Token::If,
+            expected_literal: "if".to_string(),
+        },
+        Test {
+            expected_type: Token::LParen,
+            expected_literal: "(".to_string(),
+        },
+        Test {
+            expected_type: Token::Int("5".to_string().into_bytes()),
+            expected_literal: "5".to_string(),
+        },
+        Test {
+            expected_type: Token::Lt,
+            expected_literal: "<".to_string(),
+        },
+        Test {
+            expected_type: Token::Int("10".to_string().into_bytes()),
+            expected_literal: "10".to_string(),
+        },
+        Test {
+            expected_type: Token::RParen,
+            expected_literal: ")".to_string(),
+        },
+        Test {
+            expected_type: Token::LBrace,
+            expected_literal: "{".to_string(),
+        },
+        Test {
+            expected_type: Token::Return,
+            expected_literal: "return".to_string(),
+        },
+        Test {
+            expected_type: Token::True,
+            expected_literal: "true".to_string(),
+        },
+        Test {
+            expected_type: Token::Semicolon,
+            expected_literal: ";".to_string(),
+        },
+        Test {
+            expected_type: Token::RBrace,
+            expected_literal: "}".to_string(),
+        },
+        Test {
+            expected_type: Token::Else,
+            expected_literal: "else".to_string(),
+        },
+        Test {
+            expected_type: Token::LBrace,
+            expected_literal: "{".to_string(),
+        },
+        Test {
+            expected_type: Token::Return,
+            expected_literal: "return".to_string(),
+        },
+        Test {
+            expected_type: Token::False,
+            expected_literal: "false".to_string(),
+        },
+        Test {
+            expected_type: Token::Semicolon,
+            expected_literal: ";".to_string(),
+        },
+        Test {
+            expected_type: Token::RBrace,
+            expected_literal: "}".to_string(),
         },
     ];
 
