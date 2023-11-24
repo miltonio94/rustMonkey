@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Milton"]
 
 [lib]
-path = "src/lib.rs"
+path = "src/lib/mod.rs"
 
 [[bin]]
 path = "src/main.rs"
