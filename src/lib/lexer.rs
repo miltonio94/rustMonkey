@@ -63,7 +63,7 @@ impl Lexer {
             b'{' => Token::LBrace,
             b'}' => Token::RBrace,
 
-            b'\0' => Token::Eof,
+            b'\0' => Token::EOF,
             _ => {
                 if is_letter(self.ch) {
                     let chunck = self.read_identifier();

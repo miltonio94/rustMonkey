@@ -4,7 +4,7 @@ use std::{fmt::Display, vec};
 #[derive(Debug, PartialEq, Clone)]
 pub enum Token {
     Illegal,
-    Eof,
+    EOF,
 
     // Identifier + literals
     // TODO: Change from Vec<u8> to &[u8]
@@ -79,7 +79,7 @@ impl Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Illegal => write!(f, ""),
-            Self::Eof => write!(f, ""),
+            Self::EOF => write!(f, ""),
 
             Self::Ident(ident) => write!(
                 f,

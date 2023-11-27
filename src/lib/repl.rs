@@ -18,7 +18,7 @@ pub fn start(io_in: io::Stdin, mut io_out: io::Stdout) -> io::Result<()> {
         let mut l = lexer::Lexer::new(line);
 
         let mut tok = l.next_token();
-        while tok != token::Token::Eof {
+        while tok != token::Token::EOF {
             let mut out = Vec::new();
             write!(out, "{:?}\n", tok)?;
             io_out.write_all(out.as_slice())?;

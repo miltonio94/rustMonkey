@@ -22,7 +22,7 @@ let y = 10;
 let foobar = 838383;
 "#;
     let l = Box::new(lexer::Lexer::new(input.to_string()));
-    let p = parser::Parser::new(l);
+    let mut p = parser::Parser::new(l);
     let program = match p.parse_program() {
         Some(program) => program,
         None => panic!("parse_program returned a None"),
@@ -37,7 +37,37 @@ let foobar = 838383;
     let tests = vec![Test::new("x"), Test::new("x"), Test::new("foobar")];
 
     for (i, tt) in tests.iter().enumerate() {
-        let stmt = program.statements[i];
-        //
+        let stmt = &program.statements[i];
+        test_let(stmt, tt.expected_identifier.clone());
     }
+}
+
+fn test_let(s: &ast::Statement, name: String) {
+    let let_statement = match s.let_statement() {
+        Some(let_statement) => let_statement,
+        None => panic!("Expected LetStatement, got none"),
+    };
+
+    assert_eq!(
+        let_statement.token.to_string(),
+        "let".to_string(),
+        "let_statement.token.to_string() not 'let' got {}",
+        let_statement.token.to_string()
+    );
+
+    assert_eq!(
+        String::from_utf8(let_statement.name.value.clone()).unwrap_or_default(),
+        name,
+        "let_statement.name.value not {} got {}",
+        name,
+        String::from_utf8(let_statement.name.value.clone()).unwrap_or_default()
+    );
+
+    assert_eq!(
+        let_statement.name.token.to_string(),
+        name,
+        "let_statement.name.token.to_string not {}, got {}",
+        name,
+        let_statement.name.token.to_string()
+    )
 }
