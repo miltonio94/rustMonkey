@@ -7,7 +7,7 @@ static PROMPT: &str = ">> ";
 
 pub fn start(io_in: io::Stdin, mut io_out: io::Stdout) -> io::Result<()> {
     loop {
-        io_out.lock();
+        let _ = io_out.lock();
         io_out.write_all(PROMPT.as_bytes())?;
         io_out.flush()?;
 

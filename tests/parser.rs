@@ -27,6 +27,7 @@ let foobar = 838383;
         Some(program) => program,
         None => panic!("parse_program returned a None"),
     };
+
     assert_eq!(
         program.statements.len(),
         3,
@@ -34,7 +35,7 @@ let foobar = 838383;
         program.statements.len()
     );
 
-    let tests = vec![Test::new("x"), Test::new("x"), Test::new("foobar")];
+    let tests = vec![Test::new("x"), Test::new("y"), Test::new("foobar")];
 
     for (i, tt) in tests.iter().enumerate() {
         let stmt = &program.statements[i];

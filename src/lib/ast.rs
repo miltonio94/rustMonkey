@@ -13,7 +13,7 @@ impl NodeInterface for Node {
     fn token_literal(&self) -> String {
         match self {
             Self::Statement(statement) => statement.token_literal(),
-            Self::Expression(expression) => String::new(), // TODO: remove this,
+            Self::Expression(_expression) => String::new(), // TODO: remove this,
         }
     }
 }

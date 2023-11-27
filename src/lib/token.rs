@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::{fmt::Display, vec};
+use std::fmt::Display;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum TokenType {

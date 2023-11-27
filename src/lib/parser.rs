@@ -1,4 +1,4 @@
-use crate::ast::{self, Identifier, LetStatement, Program, Statement};
+use crate::ast::{Identifier, LetStatement, Program, Statement};
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
 
@@ -37,7 +37,7 @@ impl Parser {
             self.next_token();
         }
 
-        None
+        Some(program)
     }
 
     fn parse_statement(&mut self) -> Option<Statement> {
@@ -61,7 +61,8 @@ impl Parser {
             value: self.cur_token.to_string(),
         };
 
-        if self.expect_peek(TokenType::Assign) {
+        if !self.expect_peek(TokenType::Assign) {
+            println!("expect assign");
             return None;
         }
 
@@ -78,14 +79,19 @@ impl Parser {
     }
 
     fn cur_token_is(&self, t: TokenType) -> bool {
-        todo!("do the thing")
+        self.cur_token.token_type == t
     }
 
     fn peek_token_is(&self, t: TokenType) -> bool {
-        todo!("do the thing")
+        self.peek_token.token_type == t
     }
 
-    fn expect_peek(&self, t: TokenType) -> bool {
-        todo!("do the thing")
+    fn expect_peek(&mut self, t: TokenType) -> bool {
+        if self.peek_token_is(t) {
+            self.next_token();
+            true
+        } else {
+            false
+        }
     }
 }
