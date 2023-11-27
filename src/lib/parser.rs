@@ -1,6 +1,6 @@
 use crate::ast::{self, Identifier, LetStatement, Program, Statement};
 use crate::lexer::Lexer;
-use crate::token::Token;
+use crate::token::{Token, TokenType};
 
 pub struct Parser {
     l: Box<Lexer>,
@@ -29,7 +29,7 @@ impl Parser {
     pub fn parse_program(&mut self) -> Option<Program> {
         let mut program = Program { statements: vec![] };
 
-        while self.cur_token != Token::EOF {
+        while self.cur_token.token_type != TokenType::EOF {
             match self.parse_statement() {
                 Some(stmt) => program.statements.push(stmt),
                 None => (),
@@ -40,35 +40,52 @@ impl Parser {
         None
     }
 
-    fn parse_statement(&self) -> Option<Statement> {
-        match self.cur_token {
-            Token::Let => self
+    fn parse_statement(&mut self) -> Option<Statement> {
+        match self.cur_token.token_type {
+            TokenType::Let => self
                 .parse_let_statement()
                 .map(|stmt| Statement::LetStatement(stmt)),
             _ => None,
         }
     }
 
-    fn parse_let_statement(&self) -> Option<LetStatement> {
+    fn parse_let_statement(&mut self) -> Option<LetStatement> {
         let token = self.cur_token.clone();
 
-        if !self.expect_peek(Token::Ident(vec![])) {
+        if !self.expect_peek(TokenType::Ident) {
             return None;
         }
 
-        let name = todo!("do the thing");
-        None
+        let name = Identifier {
+            token: self.cur_token.clone(),
+            value: self.cur_token.to_string(),
+        };
+
+        if self.expect_peek(TokenType::Assign) {
+            return None;
+        }
+
+        // TODO: Skipping expression until we encounter a semicolon
+        while !self.cur_token_is(TokenType::Semicolon) {
+            self.next_token();
+        }
+
+        Some(LetStatement {
+            token,
+            name,
+            value: vec![],
+        })
     }
 
-    fn cur_token_is(&self, t: Token) -> bool {
+    fn cur_token_is(&self, t: TokenType) -> bool {
         todo!("do the thing")
     }
 
-    fn peek_token_is(&self, t: Token) -> bool {
+    fn peek_token_is(&self, t: TokenType) -> bool {
         todo!("do the thing")
     }
 
-    fn expect_peek(&self, t: Token) -> bool {
+    fn expect_peek(&self, t: TokenType) -> bool {
         todo!("do the thing")
     }
 }

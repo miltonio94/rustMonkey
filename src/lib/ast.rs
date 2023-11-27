@@ -71,7 +71,7 @@ impl NodeInterface for LetStatement {
 
 pub struct Identifier {
     pub token: Token,
-    pub value: Vec<u8>,
+    pub value: String,
 }
 
 impl NodeInterface for Identifier {

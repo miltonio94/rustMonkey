@@ -56,11 +56,9 @@ fn test_let(s: &ast::Statement, name: String) {
     );
 
     assert_eq!(
-        String::from_utf8(let_statement.name.value.clone()).unwrap_or_default(),
-        name,
+        let_statement.name.value, name,
         "let_statement.name.value not {} got {}",
-        name,
-        String::from_utf8(let_statement.name.value.clone()).unwrap_or_default()
+        name, let_statement.name.value
     );
 
     assert_eq!(
