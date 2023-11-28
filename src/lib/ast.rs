@@ -1,9 +1,10 @@
 use crate::token::Token;
 
-trait NodeInterface {
+pub trait NodeInterface {
     fn token_literal(&self) -> String;
 }
 
+#[derive(Debug)]
 pub enum Node {
     Statement(Statement),
     Expression(Expression),
@@ -18,8 +19,10 @@ impl NodeInterface for Node {
     }
 }
 
+#[derive(Debug)]
 pub enum Statement {
     LetStatement(LetStatement),
+    ReturnStatement(ReturnStatement),
 }
 
 impl Statement {
@@ -29,20 +32,26 @@ impl Statement {
             _ => None,
         }
     }
+
+    pub fn return_statement(&self) -> Option<&ReturnStatement> {
+        match self {
+            Self::ReturnStatement(return_statement) => Some(return_statement),
+            _ => None,
+        }
+    }
 }
 
 impl NodeInterface for Statement {
     fn token_literal(&self) -> String {
         match self {
             Self::LetStatement(let_statement) => let_statement.token_literal(),
+            Self::ReturnStatement(return_statement) => return_statement.token_literal(),
+            _ => "".to_string(),
         }
     }
 }
 
-pub enum Expression {
-    //
-}
-
+#[derive(Debug)]
 pub struct Program {
     pub statements: Vec<Statement>,
 }
@@ -57,6 +66,7 @@ impl NodeInterface for Program {
     }
 }
 
+#[derive(Debug)]
 pub struct LetStatement {
     pub token: Token,
     pub name: Identifier,
@@ -69,6 +79,7 @@ impl NodeInterface for LetStatement {
     }
 }
 
+#[derive(Debug)]
 pub struct Identifier {
     pub token: Token,
     pub value: String,
@@ -78,4 +89,20 @@ impl NodeInterface for Identifier {
     fn token_literal(&self) -> String {
         self.token.to_string()
     }
+}
+
+#[derive(Debug)]
+pub struct ReturnStatement {
+    pub token: Token,
+    pub return_value: Expression,
+}
+
+impl NodeInterface for ReturnStatement {
+    fn token_literal(&self) -> String {
+        self.token.to_string()
+    }
+}
+#[derive(Debug)]
+pub enum Expression {
+    None, //TODO: remove this
 }

@@ -2,6 +2,7 @@ use std::vec;
 
 use crate::token::{self, Token, TokenType};
 
+#[derive(Debug)]
 pub struct Lexer {
     input: vec::Vec<u8>,
     position: usize,      // current position in input (points to current char)

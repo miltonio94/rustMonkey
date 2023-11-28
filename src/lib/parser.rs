@@ -1,12 +1,14 @@
-use crate::ast::{Identifier, LetStatement, Program, Statement};
+use crate::ast::{Expression, Identifier, LetStatement, Program, ReturnStatement, Statement};
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
 
+#[derive(Debug)]
 pub struct Parser {
     l: Box<Lexer>,
 
     cur_token: Token,
     peek_token: Token,
+    errors: Vec<String>,
 }
 
 impl Parser {
@@ -18,6 +20,7 @@ impl Parser {
             cur_token,
             peek_token,
             l: lex,
+            errors: vec![],
         }
     }
 
@@ -45,6 +48,9 @@ impl Parser {
             TokenType::Let => self
                 .parse_let_statement()
                 .map(|stmt| Statement::LetStatement(stmt)),
+            TokenType::Return => self
+                .parse_return_statement()
+                .map(|stmt| Statement::ReturnStatement(stmt)),
             _ => None,
         }
     }
@@ -82,16 +88,39 @@ impl Parser {
         self.cur_token.token_type == t
     }
 
-    fn peek_token_is(&self, t: TokenType) -> bool {
-        self.peek_token.token_type == t
+    fn peek_token_is(&self, t: &TokenType) -> bool {
+        self.peek_token.token_type == *t
     }
 
     fn expect_peek(&mut self, t: TokenType) -> bool {
-        if self.peek_token_is(t) {
+        if self.peek_token_is(&t) {
             self.next_token();
             true
         } else {
+            self.peek_error(t);
             false
         }
+    }
+
+    pub fn errors(&self) -> Vec<String> {
+        self.errors.clone()
+    }
+
+    fn peek_error(&mut self, t: TokenType) {
+        self.errors.push(format!(
+            "expected next token to be {} but got {} instead",
+            t, self.peek_token.token_type
+        ));
+    }
+
+    fn parse_return_statement(&mut self) -> Option<ReturnStatement> {
+        let stmt = ReturnStatement {
+            token: self.cur_token.clone(),
+            return_value: Expression::None,
+        };
+
+        self.next_token();
+
+        Some(stmt)
     }
 }
