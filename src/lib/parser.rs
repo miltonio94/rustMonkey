@@ -2,6 +2,9 @@ use crate::ast::{Expression, Identifier, LetStatement, Program, ReturnStatement,
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
 
+type PrefixParseFn = fn() -> Expression;
+type InfixParseFn = fn(Expression) -> Expression;
+
 #[derive(Debug)]
 pub struct Parser {
     l: Box<Lexer>,
@@ -80,7 +83,7 @@ impl Parser {
         Some(LetStatement {
             token,
             name,
-            value: vec![],
+            value: Expression::None,
         })
     }
 
@@ -122,5 +125,17 @@ impl Parser {
         self.next_token();
 
         Some(stmt)
+    }
+
+    fn prefix_parse_fns(&self, token: Token) -> Expression {
+        match token {
+            _ => Expression::None,
+        }
+    }
+
+    fn infix_parse_fns(&self, exp: Expression, token: Token) -> Expression {
+        match token {
+            _ => Expression::None,
+        }
     }
 }
