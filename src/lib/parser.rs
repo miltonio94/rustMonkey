@@ -1,4 +1,6 @@
-use crate::ast::{Expression, Identifier, LetStatement, Program, ReturnStatement, Statement};
+use crate::ast::{
+    Expression, ExpressionStatement, Identifier, LetStatement, Program, ReturnStatement, Statement,
+};
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
 
@@ -54,7 +56,9 @@ impl Parser {
             TokenType::Return => self
                 .parse_return_statement()
                 .map(|stmt| Statement::ReturnStatement(stmt)),
-            _ => None,
+            _ => self
+                .parse_expression_statement()
+                .map(|stmt| Statement::ExpressionStatement(stmt)),
         }
     }
 
@@ -123,6 +127,18 @@ impl Parser {
         };
 
         self.next_token();
+
+        Some(stmt)
+    }
+
+    fn parse_expression_statement(&self) -> Option<ExpressionStatement> {
+        let stmt = ExpressionStatement {
+            token: self.cur_token.clone(),
+            expression: todo!(),
+        };
+        if self.peek_token_is(&TokenType::Semicolon) {
+            self.next_token();
+        }
 
         Some(stmt)
     }

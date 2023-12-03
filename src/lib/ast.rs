@@ -15,7 +15,7 @@ impl NodeInterface for Node {
     fn token_literal(&self) -> String {
         match self {
             Self::Statement(statement) => statement.token_literal(),
-            Self::Expression(_expression) => String::new(), // TODO: remove this,
+            Self::Expression(expression) => expression.to_string(), // TODO: remove this,
         }
     }
 }
@@ -229,7 +229,7 @@ impl Display for Expression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::None => write!(f, ""),
-            _ => todo!(),
+            Self::Identifier(idnt) => write!(f, "{}", idnt.to_string()),
         }
     }
 }
