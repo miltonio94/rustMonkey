@@ -4,9 +4,6 @@ use crate::ast::{
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
 
-type PrefixParseFn = fn() -> Expression;
-type InfixParseFn = fn(Expression) -> Expression;
-
 #[derive(Debug)]
 pub struct Parser {
     l: Box<Lexer>,
@@ -15,6 +12,9 @@ pub struct Parser {
     peek_token: Token,
     errors: Vec<String>,
 }
+
+type PrefixParseFn = fn(&Parser) -> Expression;
+type InfixParseFn = fn(&Parser, Expression) -> Expression;
 
 impl Parser {
     pub fn new(mut lex: Box<Lexer>) -> Self {
@@ -131,10 +131,10 @@ impl Parser {
         Some(stmt)
     }
 
-    fn parse_expression_statement(&self) -> Option<ExpressionStatement> {
+    fn parse_expression_statement(&mut self) -> Option<ExpressionStatement> {
         let stmt = ExpressionStatement {
             token: self.cur_token.clone(),
-            expression: todo!(),
+            expression: self.parse_expression(Precedence::Lowest)?,
         };
         if self.peek_token_is(&TokenType::Semicolon) {
             self.next_token();
@@ -143,15 +143,40 @@ impl Parser {
         Some(stmt)
     }
 
-    fn prefix_parse_fns(&self, token: Token) -> Expression {
+    fn prefix_parse_fns(&self, token: TokenType) -> Option<PrefixParseFn> {
         match token {
-            _ => Expression::None,
+            TokenType::Ident => Some(parse_identifier),
+            _ => None,
         }
     }
 
-    fn infix_parse_fns(&self, exp: Expression, token: Token) -> Expression {
-        match token {
-            _ => Expression::None,
-        }
+    fn infix_parse_fns(&self, exp: Expression, token: TokenType) -> Option<InfixParseFn> {
+        None
     }
+
+    fn parse_expression(&self, precedence: Precedence) -> Option<Expression> {
+        let prefix = self.prefix_parse_fns(self.cur_token.token_type.clone())?;
+
+        let left_exp = prefix(&self);
+
+        Some(left_exp)
+    }
+}
+
+fn parse_identifier(parser: &Parser) -> Expression {
+    Expression::Identifier(Identifier {
+        token: parser.cur_token.clone(),
+        value: parser.cur_token.literal.clone(),
+    })
+}
+
+#[derive(PartialEq, PartialOrd)]
+enum Precedence {
+    Lowest,
+    Equals,
+    LessGreater,
+    Sum,
+    Product,
+    Prefix,
+    Call,
 }
