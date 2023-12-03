@@ -160,3 +160,48 @@ fn test_identifier() {
         ident.token_literal()
     );
 }
+
+#[test]
+fn test_integer_literal() {
+    let input = "5;".to_string();
+
+    let l = Box::new(lexer::Lexer::new(input));
+    let mut p = parser::Parser::new(l);
+    let program = match p.parse_program() {
+        Some(program) => program,
+        None => panic!("p.parse_program returned None, was expecting a Program"),
+    };
+    check_parser_errors(&p);
+
+    assert_eq!(
+        program.statements.len(),
+        1,
+        "was expecting program to have 1 statement, got {} instead",
+        program.statements.len()
+    );
+
+    let stmt = match program.statements[0].expression_statement() {
+        Some(stmt) => stmt,
+        None => panic!(
+            "was expecting program.statements[0] to be an ExpressionStatement, got None instead"
+        ),
+    };
+
+    let literal = match stmt.expression.integer_literal() {
+        Some(literal) => literal,
+        None => panic!("Was expecting stmt.expression.integer_literal to be an IntegerLiteral, got None instead"),
+    };
+
+    assert_eq!(
+        literal.value, 5,
+        "literal.value not 5 got {} instead",
+        literal.value
+    );
+
+    assert_eq!(
+        literal.token_literal(),
+        "5".to_string(),
+        r#"was expecting literal.token_literal to be "5" got "{}" instead"#,
+        literal.token_literal()
+    );
+}

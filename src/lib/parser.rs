@@ -1,5 +1,6 @@
 use crate::ast::{
-    Expression, ExpressionStatement, Identifier, LetStatement, Program, ReturnStatement, Statement,
+    Expression, ExpressionStatement, Identifier, IntegerLiteral, LetStatement, Program,
+    ReturnStatement, Statement,
 };
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
@@ -168,6 +169,26 @@ fn parse_identifier(parser: &Parser) -> Expression {
         token: parser.cur_token.clone(),
         value: parser.cur_token.literal.clone(),
     })
+}
+
+fn parse_integer_literal(parser: &mut Parser) -> Option<Expression> {
+    let value: i64 = match parser.cur_token.literal.parse() {
+        Ok(val) => val,
+        Err(err) => {
+            //
+            parser.errors.push(format!(
+                "could not parse {} as integer. Err: {}",
+                parser.cur_token.literal.clone(),
+                err.to_string()
+            ));
+            return None;
+        }
+    };
+
+    Some(Expression::IntegerLiteral(IntegerLiteral {
+        token: parser.cur_token.clone(),
+        value,
+    }))
 }
 
 #[derive(PartialEq, PartialOrd)]

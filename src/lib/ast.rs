@@ -140,24 +140,6 @@ impl Display for LetStatement {
 }
 
 #[derive(Debug)]
-pub struct Identifier {
-    pub token: Token,
-    pub value: String,
-}
-
-impl NodeInterface for Identifier {
-    fn token_literal(&self) -> String {
-        self.token.to_string()
-    }
-}
-
-impl Display for Identifier {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.value)
-    }
-}
-
-#[derive(Debug)]
 pub struct ReturnStatement {
     pub token: Token,
     pub return_value: Expression,
@@ -207,6 +189,7 @@ impl Display for ExpressionStatement {
 pub enum Expression {
     None, //TODO: remove this
     Identifier(Identifier),
+    IntegerLiteral(IntegerLiteral),
 }
 
 impl Expression {
@@ -223,6 +206,13 @@ impl Expression {
             _ => None,
         }
     }
+
+    pub fn integer_literal(&self) -> Option<&IntegerLiteral> {
+        match self {
+            Self::IntegerLiteral(int) => Some(int),
+            _ => None,
+        }
+    }
 }
 
 impl Display for Expression {
@@ -230,6 +220,43 @@ impl Display for Expression {
         match self {
             Self::None => write!(f, ""),
             Self::Identifier(idnt) => write!(f, "{}", idnt.to_string()),
+            Self::IntegerLiteral(int) => write!(f, "{}", int.to_string()),
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct Identifier {
+    pub token: Token,
+    pub value: String,
+}
+
+impl NodeInterface for Identifier {
+    fn token_literal(&self) -> String {
+        self.token.to_string()
+    }
+}
+
+impl Display for Identifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+
+#[derive(Debug)]
+pub struct IntegerLiteral {
+    pub token: Token,
+    pub value: i64,
+}
+
+impl Display for IntegerLiteral {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.token.literal)
+    }
+}
+
+impl NodeInterface for IntegerLiteral {
+    fn token_literal(&self) -> String {
+        self.token.to_string()
     }
 }
