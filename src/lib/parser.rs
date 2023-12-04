@@ -14,7 +14,7 @@ pub struct Parser {
     errors: Vec<String>,
 }
 
-type PrefixParseFn = fn(&Parser) -> Expression;
+type PrefixParseFn = fn(&mut Parser) -> Expression;
 type InfixParseFn = fn(&Parser, Expression) -> Expression;
 
 impl Parser {
@@ -147,6 +147,7 @@ impl Parser {
     fn prefix_parse_fns(&self, token: TokenType) -> Option<PrefixParseFn> {
         match token {
             TokenType::Ident => Some(parse_identifier),
+            TokenType::Int => Some(parse_integer_literal),
             _ => None,
         }
     }
@@ -155,23 +156,23 @@ impl Parser {
         None
     }
 
-    fn parse_expression(&self, precedence: Precedence) -> Option<Expression> {
+    fn parse_expression(&mut self, precedence: Precedence) -> Option<Expression> {
         let prefix = self.prefix_parse_fns(self.cur_token.token_type.clone())?;
 
-        let left_exp = prefix(&self);
+        let left_exp = prefix(self);
 
         Some(left_exp)
     }
 }
 
-fn parse_identifier(parser: &Parser) -> Expression {
+fn parse_identifier(parser: &mut Parser) -> Expression {
     Expression::Identifier(Identifier {
         token: parser.cur_token.clone(),
         value: parser.cur_token.literal.clone(),
     })
 }
 
-fn parse_integer_literal(parser: &mut Parser) -> Option<Expression> {
+fn parse_integer_literal(parser: &mut Parser) -> Expression {
     let value: i64 = match parser.cur_token.literal.parse() {
         Ok(val) => val,
         Err(err) => {
@@ -181,14 +182,14 @@ fn parse_integer_literal(parser: &mut Parser) -> Option<Expression> {
                 parser.cur_token.literal.clone(),
                 err.to_string()
             ));
-            return None;
+            return Expression::None;
         }
     };
 
-    Some(Expression::IntegerLiteral(IntegerLiteral {
+    Expression::IntegerLiteral(IntegerLiteral {
         token: parser.cur_token.clone(),
         value,
-    }))
+    })
 }
 
 #[derive(PartialEq, PartialOrd)]
