@@ -285,3 +285,73 @@ fn integer_literal_test(il: &ast::Expression, value: i64) {
         integ.token_literal()
     );
 }
+
+#[test]
+fn test_parsing_infix_expression() {
+    struct Test {
+        input: String,
+        left_value: i64,
+        operator: String,
+        right_value: i64,
+    }
+    fn new(input: String, left_value: i64, operator: String, right_value: i64) -> Test {
+        Test {
+            input,
+            left_value,
+            operator,
+            right_value,
+        }
+    }
+
+    let infix_tests = vec![
+        new("5 + 5".to_string(), 5, "+".to_string(), 5),
+        new("5 - 5".to_string(), 5, "-".to_string(), 5),
+        new("5 * 5".to_string(), 5, "*".to_string(), 5),
+        new("5 / 5".to_string(), 5, "/".to_string(), 5),
+        new("5 > 5".to_string(), 5, ">".to_string(), 5),
+        new("5 < 5".to_string(), 5, "<".to_string(), 5),
+        new("5 == 5".to_string(), 5, "==".to_string(), 5),
+        new("5 != 5".to_string(), 5, "!=".to_string(), 5),
+    ];
+
+    for tt in infix_tests.iter() {
+        let l = Box::new(lexer::Lexer::new(tt.input.clone()));
+        let mut p = parser::Parser::new(l);
+        let program = match p.parse_program() {
+            Some(program) => program,
+            None => panic!("p.parse_program() returned None"),
+        };
+        check_parser_errors(&p);
+
+        assert_eq!(
+            program.statements.len(),
+            1,
+            "Was expecting program.statements to have 1 statement got {} instead",
+            program.statements.len()
+        );
+
+        let stmt = match program.statements[0].expression_statement() {
+            Some(stmt) => stmt,
+            None => panic!(
+                "program.statements[0] is not an expression statement, got {:?} instead",
+                program.statements[0]
+            ),
+        };
+
+        let exp = match stmt.expression.infix_expression() {
+            Some(exp) => exp,
+            None => panic!(
+                "exp.Expression is not an InfixExpression got {:?} instead",
+                stmt.expression
+            ),
+        };
+
+        integer_literal_test(&exp.left, tt.left_value);
+        assert_eq!(
+            exp.operator, tt.operator,
+            "exp.operator is not {} got {} instead",
+            tt.operator, exp.operator
+        );
+        integer_literal_test(&exp.right, tt.right_value);
+    }
+}

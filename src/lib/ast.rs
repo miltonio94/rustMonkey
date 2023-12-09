@@ -191,6 +191,7 @@ pub enum Expression {
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
     PrefixExpression(PrefixExpression),
+    InfixExpression(InfixExpression),
 }
 
 impl Expression {
@@ -221,6 +222,13 @@ impl Expression {
             _ => None,
         }
     }
+
+    pub fn infix_expression(&self) -> Option<&InfixExpression> {
+        match self {
+            Self::InfixExpression(infix) => Some(&infix),
+            _ => None,
+        }
+    }
 }
 
 impl Display for Expression {
@@ -230,6 +238,7 @@ impl Display for Expression {
             Self::Identifier(idnt) => write!(f, "{}", idnt.to_string()),
             Self::IntegerLiteral(int) => write!(f, "{}", int.to_string()),
             Self::PrefixExpression(prefix) => write!(f, "{}", prefix.to_string()),
+            Self::InfixExpression(infix) => write!(f, "{}", infix.to_string()),
         }
     }
 }
@@ -286,5 +295,31 @@ impl Display for PrefixExpression {
 impl NodeInterface for PrefixExpression {
     fn token_literal(&self) -> String {
         format!("{}", self.token.literal)
+    }
+}
+
+#[derive(Debug)]
+pub struct InfixExpression {
+    pub token: Token,
+    pub left: Box<Expression>,
+    pub operator: String,
+    pub right: Box<Expression>,
+}
+
+impl NodeInterface for InfixExpression {
+    fn token_literal(&self) -> String {
+        format!("{}", self.token.literal)
+    }
+}
+
+impl Display for InfixExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "({} {} {})",
+            self.left.to_string(),
+            self.operator,
+            self.right.to_string()
+        )
     }
 }
