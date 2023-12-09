@@ -1,6 +1,6 @@
 use crate::ast::{
-    Expression, ExpressionStatement, Identifier, IntegerLiteral, LetStatement, Program,
-    ReturnStatement, Statement,
+    Expression, ExpressionStatement, Identifier, IntegerLiteral, LetStatement, PrefixExpression,
+    Program, ReturnStatement, Statement,
 };
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
@@ -148,6 +148,8 @@ impl Parser {
         match token {
             TokenType::Ident => Some(parse_identifier),
             TokenType::Int => Some(parse_integer_literal),
+            TokenType::Bang => Some(parse_prefix_expression),
+            TokenType::Minus => Some(parse_prefix_expression),
             _ => None,
         }
     }
@@ -189,6 +191,24 @@ fn parse_integer_literal(parser: &mut Parser) -> Expression {
     Expression::IntegerLiteral(IntegerLiteral {
         token: parser.cur_token.clone(),
         value,
+    })
+}
+
+fn parse_prefix_expression(parser: &mut Parser) -> Expression {
+    let token = parser.cur_token.clone();
+    let operator = parser.cur_token.literal.clone();
+
+    parser.next_token();
+
+    let right = Box::new(match parser.parse_expression(Precedence::Prefix) {
+        Some(exp) => exp,
+        None => return Expression::None,
+    });
+
+    Expression::PrefixExpression(PrefixExpression {
+        token,
+        operator,
+        right,
     })
 }
 

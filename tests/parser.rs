@@ -205,3 +205,83 @@ fn test_integer_literal() {
         literal.token_literal()
     );
 }
+
+#[test]
+fn test_parsing_prefix_expression() {
+    struct Test {
+        input: String,
+        operator: String,
+        integer_value: i64,
+    }
+    impl Test {
+        fn new(input: String, operator: String, integer_value: i64) -> Test {
+            Test {
+                input,
+                operator,
+                integer_value,
+            }
+        }
+    }
+
+    let prefix_test = vec![
+        Test::new("!15;".to_string(), "!".to_string(), 15),
+        Test::new("-15;".to_string(), "-".to_string(), 15),
+    ];
+
+    for tt in prefix_test.iter() {
+        let l = Box::new(lexer::Lexer::new(tt.input.clone()));
+        let mut p = parser::Parser::new(l);
+        let program = match p.parse_program() {
+            Some(program) => program,
+            None => panic!("p.parse_program returned None, was expecting Some(program)"),
+        };
+        check_parser_errors(&p);
+
+        assert_eq!(
+            program.statements.len(),
+            1,
+            "Was expecting program.statements to have the length of 1 got {} instead",
+            program.statements.len()
+        );
+
+        let stmt = match program.statements[0].expression_statement() {
+            Some(stmt) => stmt,
+            None => panic!("program.Statements[0].expression_statement() returned None"),
+        };
+
+        let mut exp = match stmt.expression.prefix_expression() {
+            Some(exp) => exp,
+            None => panic!("stmt.expression is not a PrefixExpression, got None"),
+        };
+
+        assert_eq!(
+            exp.operator, tt.operator,
+            "Was expecting exp.operator to be {} got {} instead",
+            tt.operator, exp.operator
+        );
+
+        integer_literal_test(exp.right.as_ref(), tt.integer_value);
+    }
+}
+
+fn integer_literal_test(il: &ast::Expression, value: i64) {
+    let integ = match il.integer_literal() {
+        Some(integ) => integ,
+        None => panic!("il not IntegerLiteral, got {:?}", il),
+    };
+
+    assert_eq!(
+        integ.value, value,
+        "integ.value not {}, got {}",
+        value, integ.value
+    );
+
+    let value_string = format!("{}", value);
+    assert_eq!(
+        integ.token_literal(),
+        value_string,
+        "integ.TokenLiteral not {} got {} instead",
+        value_string,
+        integ.token_literal()
+    );
+}

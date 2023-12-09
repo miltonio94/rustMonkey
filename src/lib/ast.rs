@@ -190,6 +190,7 @@ pub enum Expression {
     None, //TODO: remove this
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
+    PrefixExpression(PrefixExpression),
 }
 
 impl Expression {
@@ -213,6 +214,13 @@ impl Expression {
             _ => None,
         }
     }
+
+    pub fn prefix_expression(&self) -> Option<&PrefixExpression> {
+        match self {
+            Self::PrefixExpression(prefix) => Some(&prefix),
+            _ => None,
+        }
+    }
 }
 
 impl Display for Expression {
@@ -221,6 +229,7 @@ impl Display for Expression {
             Self::None => write!(f, ""),
             Self::Identifier(idnt) => write!(f, "{}", idnt.to_string()),
             Self::IntegerLiteral(int) => write!(f, "{}", int.to_string()),
+            Self::PrefixExpression(prefix) => write!(f, "{}", prefix.to_string()),
         }
     }
 }
@@ -258,5 +267,24 @@ impl Display for IntegerLiteral {
 impl NodeInterface for IntegerLiteral {
     fn token_literal(&self) -> String {
         self.token.to_string()
+    }
+}
+
+#[derive(Debug)]
+pub struct PrefixExpression {
+    pub token: Token,
+    pub operator: String,
+    pub right: Box<Expression>,
+}
+
+impl Display for PrefixExpression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}{})", self.operator, self.right.to_string())
+    }
+}
+
+impl NodeInterface for PrefixExpression {
+    fn token_literal(&self) -> String {
+        format!("{}", self.token.literal)
     }
 }
