@@ -355,3 +355,57 @@ fn test_parsing_infix_expression() {
         integer_literal_test(&exp.right, tt.right_value);
     }
 }
+
+#[test]
+fn test_operator_precedence_parsing() {
+    struct Test {
+        input: String,
+        expected: String,
+    }
+    fn new(input: &str, expected: &str) -> Test {
+        Test {
+            input: input.to_string(),
+            expected: expected.to_string(),
+        }
+    }
+
+    let tests = vec![
+        new("-a * b", "((-a) * b)"),
+        new("!-a", "(!(-a))"),
+        new("a + b + c", "((a + b) + c)"),
+        new("a + b - c", "((a + b) - c)"),
+        new("a * b * c", "((a * b) * c)"),
+        new("a * b / c", "((a * b) / c)"),
+        new("a + b / c", "(a + (b / c))"),
+        new("a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"),
+        new("3 + 4; -5 * 5", "(3 + 4)((-5) * 5)"),
+        new("5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"),
+        new("5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"),
+        new(
+            "3 + 4 * 5 == 3 * 1 + 4 * 5",
+            "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
+        ),
+        new(
+            "3 + 4 * 5 == 3 * 1 + 4 * 5",
+            "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
+        ),
+    ];
+
+    for tt in tests.iter() {
+        let l = Box::new(lexer::Lexer::new(tt.input.clone()));
+        let mut p = parser::Parser::new(l);
+        let program = match p.parse_program() {
+            Some(program) => program,
+            None => panic!("p.parse_program() returned None"),
+        };
+        check_parser_errors(&p);
+
+        let actual = program.to_string();
+
+        assert_eq!(
+            actual, tt.expected,
+            " expected = {}, got {} instead",
+            tt.expected, actual
+        );
+    }
+}
