@@ -1,6 +1,6 @@
 use crate::ast::{
-    Expression, ExpressionStatement, Identifier, InfixExpression, IntegerLiteral, LetStatement,
-    PrefixExpression, Program, ReturnStatement, Statement,
+    Boolean, Expression, ExpressionStatement, Identifier, InfixExpression, IntegerLiteral,
+    LetStatement, PrefixExpression, Program, ReturnStatement, Statement,
 };
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
@@ -150,6 +150,8 @@ impl Parser {
             TokenType::Int => Some(parse_integer_literal),
             TokenType::Bang => Some(parse_prefix_expression),
             TokenType::Minus => Some(parse_prefix_expression),
+            TokenType::True => Some(parse_boolean),
+            TokenType::False => Some(parse_boolean),
             _ => None,
         }
     }
@@ -259,6 +261,13 @@ fn parse_infix_expression(parser: &mut Parser, left: Box<Expression>) -> Express
         right,
         left,
     });
+}
+
+fn parse_boolean(parser: &mut Parser) -> Expression {
+    Expression::BooleanExpression(Boolean {
+        token: parser.cur_token.clone(),
+        value: parser.cur_token_is(TokenType::True),
+    })
 }
 
 #[derive(PartialEq, PartialOrd)]

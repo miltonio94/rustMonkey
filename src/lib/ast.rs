@@ -187,11 +187,12 @@ impl Display for ExpressionStatement {
 
 #[derive(Debug)]
 pub enum Expression {
-    None, //TODO: remove this
+    None,
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
     PrefixExpression(PrefixExpression),
     InfixExpression(InfixExpression),
+    BooleanExpression(Boolean),
 }
 
 impl Expression {
@@ -229,6 +230,13 @@ impl Expression {
             _ => None,
         }
     }
+
+    pub fn boolean_expression(&self) -> Option<&Boolean> {
+        match self {
+            Self::BooleanExpression(boolean) => Some(boolean),
+            _ => None,
+        }
+    }
 }
 
 impl Display for Expression {
@@ -239,6 +247,7 @@ impl Display for Expression {
             Self::IntegerLiteral(int) => write!(f, "{}", int.to_string()),
             Self::PrefixExpression(prefix) => write!(f, "{}", prefix.to_string()),
             Self::InfixExpression(infix) => write!(f, "{}", infix.to_string()),
+            Self::BooleanExpression(boolean) => write!(f, "{}", boolean.to_string()),
         }
     }
 }
@@ -321,5 +330,23 @@ impl Display for InfixExpression {
             self.operator,
             self.right.to_string()
         )
+    }
+}
+
+#[derive(Debug)]
+pub struct Boolean {
+    pub token: Token,
+    pub value: bool,
+}
+
+impl NodeInterface for Boolean {
+    fn token_literal(&self) -> String {
+        format!("{}", self.token.literal)
+    }
+}
+
+impl Display for Boolean {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.token.literal)
     }
 }
