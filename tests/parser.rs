@@ -409,3 +409,37 @@ fn test_operator_precedence_parsing() {
         );
     }
 }
+
+#[test]
+fn test_bool() {
+    struct Test {
+        input: String,
+        expected: String,
+    }
+    fn new(input: &str, expected: &str) -> Test {
+        Test {
+            input: input.to_string(),
+            expected: expected.to_string(),
+        }
+    }
+
+    let tests = vec![new("true", "true"), new("false", "false")];
+
+    for tt in tests.iter() {
+        let l = Box::new(lexer::Lexer::new(tt.input.clone()));
+        let mut p = parser::Parser::new(l);
+        let program = match p.parse_program() {
+            Some(program) => program,
+            None => panic!("p.parse_program() returned None"),
+        };
+        check_parser_errors(&p);
+
+        let actual = program.to_string();
+
+        assert_eq!(
+            actual, tt.expected,
+            " expected = {}, got {} instead",
+            tt.expected, actual
+        );
+    }
+}
