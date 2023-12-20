@@ -187,6 +187,7 @@ impl Display for ExpressionStatement {
 
 #[derive(Debug)]
 pub enum Expression {
+    // TODO: Remove None from here. We should be using Option instead
     None,
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),

@@ -14,6 +14,9 @@ pub struct Parser {
     errors: Vec<String>,
 }
 
+// TODO: Explore making parse functions return a result
+// errors maybe should be a list of Errors and maybe we should have our own error type
+
 type PrefixParseFn = fn(&mut Parser) -> Expression;
 type InfixParseFn = fn(&mut Parser, Box<Expression>) -> Expression;
 
@@ -152,6 +155,7 @@ impl Parser {
             TokenType::Minus => Some(parse_prefix_expression),
             TokenType::True => Some(parse_boolean),
             TokenType::False => Some(parse_boolean),
+            TokenType::LParen => Some(parse_grouped_expression),
             _ => None,
         }
     }
@@ -268,6 +272,21 @@ fn parse_boolean(parser: &mut Parser) -> Expression {
         token: parser.cur_token.clone(),
         value: parser.cur_token_is(TokenType::True),
     })
+}
+
+fn parse_grouped_expression(parser: &mut Parser) -> Expression {
+    parser.next_token();
+
+    let exp = match parser.parse_expression(Precedence::Lowest) {
+        Some(exp) => exp,
+        None => return Expression::None,
+    };
+
+    if !parser.expect_peek(TokenType::RParen) {
+        return Expression::None;
+    }
+
+    exp
 }
 
 #[derive(PartialEq, PartialOrd)]
