@@ -1,9 +1,10 @@
-use rust_monkey::ast::{self, NodeInterface};
+use rust_monkey::ast::expression;
+use rust_monkey::ast::statement;
+use rust_monkey::ast::NodeInterface;
 use rust_monkey::lexer;
 use rust_monkey::parser;
 
 #[test]
-
 fn test_let_statements() {
     struct Test {
         pub expected_identifier: String,
@@ -44,7 +45,7 @@ let foobar = 838383;
     }
 }
 
-fn test_let(s: &ast::Statement, name: String) {
+fn test_let(s: &statement::Statement, name: String) {
     let let_statement = match s.let_statement() {
         Some(let_statement) => let_statement,
         None => panic!("Expected LetStatement, got none"),
@@ -249,7 +250,7 @@ fn test_parsing_prefix_expression() {
             None => panic!("program.Statements[0].expression_statement() returned None"),
         };
 
-        let mut exp = match stmt.expression.prefix_expression() {
+        let exp = match stmt.expression.prefix_expression() {
             Some(exp) => exp,
             None => panic!("stmt.expression is not a PrefixExpression, got None"),
         };
@@ -264,7 +265,7 @@ fn test_parsing_prefix_expression() {
     }
 }
 
-fn integer_literal_test(il: &ast::Expression, value: i64) {
+fn integer_literal_test(il: &expression::Expression, value: i64) {
     let integ = match il.integer_literal() {
         Some(integ) => integ,
         None => panic!("il not IntegerLiteral, got {:?}", il),
