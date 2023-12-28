@@ -1,9 +1,11 @@
 use crate::ast::{
-    Boolean, Expression, ExpressionStatement, Identifier, InfixExpression, IntegerLiteral,
-    LetStatement, PrefixExpression, Program, ReturnStatement, Statement,
+    BlockStatement, Boolean, Expression, ExpressionStatement, Identifier, IfExpression,
+    InfixExpression, IntegerLiteral, LetStatement, PrefixExpression, Program, ReturnStatement,
+    Statement,
 };
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
+use std::io::{self, Write};
 
 #[derive(Debug)]
 pub struct Parser {
@@ -79,7 +81,6 @@ impl Parser {
         };
 
         if !self.expect_peek(TokenType::Assign) {
-            println!("expect assign");
             return None;
         }
 
@@ -156,6 +157,8 @@ impl Parser {
             TokenType::True => Some(parse_boolean),
             TokenType::False => Some(parse_boolean),
             TokenType::LParen => Some(parse_grouped_expression),
+            TokenType::If => Some(parse_if_expression),
+
             _ => None,
         }
     }
@@ -287,6 +290,69 @@ fn parse_grouped_expression(parser: &mut Parser) -> Expression {
     }
 
     exp
+}
+
+fn parse_if_expression(parser: &mut Parser) -> Expression {
+    let token = parser.cur_token.clone();
+
+    if !parser.expect_peek(TokenType::LParen) {
+        return Expression::None;
+    };
+
+    parser.next_token();
+    let condition = match parser.parse_expression(Precedence::Lowest) {
+        Some(exp) => Box::new(exp),
+        None => Box::new(Expression::None),
+    };
+
+    if !parser.expect_peek(TokenType::RParen) {
+        return Expression::None;
+    };
+
+    if !parser.expect_peek(TokenType::LBrace) {
+        return Expression::None;
+    };
+
+    let consequence = parse_block_statement(parser);
+
+    let mut if_exp = IfExpression {
+        token,
+        condition,
+        consequence,
+        alternative: None,
+    };
+
+    if parser.peek_token_is(&TokenType::Else) {
+        parser.next_token();
+
+        if !parser.peek_token_is(&TokenType::LBrace) {
+            return Expression::None;
+        }
+
+        if_exp.alternative = Some(parse_block_statement(parser));
+    }
+
+    Expression::IfExpression(if_exp)
+}
+
+fn parse_block_statement(parser: &mut Parser) -> BlockStatement {
+    let token = parser.cur_token.clone();
+
+    let mut statements: Vec<Statement> = Vec::new();
+
+    parser.next_token();
+
+    while !parser.cur_token_is(TokenType::RBrace) && !parser.cur_token_is(TokenType::EOF) {
+        let stmt = parser.parse_statement();
+
+        if let Some(stmt) = stmt {
+            statements.push(stmt);
+        }
+
+        parser.next_token();
+    }
+
+    BlockStatement { token, statements }
 }
 
 #[derive(PartialEq, PartialOrd)]
