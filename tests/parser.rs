@@ -507,7 +507,7 @@ fn test_if_esle_expression() {
 
     let stmt = match program.statements[0].expression_statement() {
         Some(stmt) => stmt,
-        None => panic!("Was expecting a BlockStatement got None"),
+        None => panic!("Was expecting a Expression got None"),
     };
 
     let if_exp = match stmt.expression.if_expression() {
@@ -518,5 +518,48 @@ fn test_if_esle_expression() {
     assert!(
         !Option::is_none(&if_exp.alternative),
         "expected alternative to be Some(BlockStatement) got None"
+    );
+}
+
+#[test]
+fn test_function_literal_parsing() {
+    let input = "fn(x, y) {x + y};".to_string();
+    let l = Box::new(lexer::Lexer::new(input));
+    let mut p = parser::Parser::new(l);
+    let program = match p.parse_program() {
+        Some(program) => program,
+        None => panic!("Was expecting Some from program got None"),
+    };
+    check_parser_errors(&p);
+
+    assert_eq!(
+        program.statements.len(),
+        1,
+        "program.statements does not contain 1 statement. got={}",
+        program.statements.len()
+    );
+
+    let stmt = match program.statements[0].expression_statement() {
+        Some(stmt) => stmt,
+        None => panic!("Was expecting a Expression got None"),
+    };
+
+    let function = match stmt.expression.function_literal() {
+        Some(function) => function,
+        None => panic!("Was expecting FunctionLiteral got None"),
+    };
+
+    assert_eq!(
+        function.parameters.len(),
+        2,
+        "Was expecting function to have 2 parameters got {} instead",
+        function.parameters.len()
+    );
+
+    assert_eq!(
+        function.body.statements.len(),
+        1,
+        "Was expecting body to have 1 statement got {} instead",
+        function.body.statements.len()
     );
 }
