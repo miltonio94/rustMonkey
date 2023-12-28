@@ -243,7 +243,7 @@ impl Display for FunctionLiteral {
             params.push(param.to_string());
         }
 
-        out.push_str(&params.join(","));
+        out.push_str(&params.join(", "));
         out.push(')');
         out.push_str(&self.body.to_string());
 
