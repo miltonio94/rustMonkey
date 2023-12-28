@@ -1,7 +1,7 @@
 mod helper;
 
-use crate::ast::expression::{self};
-use crate::ast::statement::{self};
+use crate::ast::expression;
+use crate::ast::statement;
 use crate::ast::Program;
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
@@ -155,6 +155,7 @@ impl Parser {
             TokenType::False => Some(parse_boolean),
             TokenType::LParen => Some(parse_grouped_expression),
             TokenType::If => Some(parse_if_expression),
+            TokenType::Function => Some(parse_function_literal),
 
             _ => None,
         }

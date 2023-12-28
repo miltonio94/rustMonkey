@@ -1,4 +1,4 @@
-use super::statement::Block;
+use super::statement;
 use crate::ast::NodeInterface;
 use crate::token::Token;
 use std::fmt::Display;
@@ -13,6 +13,7 @@ pub enum Expression {
     Infix(Infix),
     Boolean(Boolean),
     If(If),
+    FunctionLiteral(FunctionLiteral),
 }
 
 impl Expression {
@@ -64,6 +65,13 @@ impl Expression {
             _ => None,
         }
     }
+
+    pub fn function_literal(&self) -> Option<&FunctionLiteral> {
+        match self {
+            Self::FunctionLiteral(function) => Some(function),
+            _ => None,
+        }
+    }
 }
 
 impl Display for Expression {
@@ -76,6 +84,7 @@ impl Display for Expression {
             Self::Infix(infix) => write!(f, "{}", infix.to_string()),
             Self::Boolean(boolean) => write!(f, "{}", boolean.to_string()),
             Self::If(if_exp) => write!(f, "{}", if_exp.to_string()),
+            Self::FunctionLiteral(function) => write!(f, "{}", function.to_string()),
         }
     }
 }
@@ -183,8 +192,8 @@ impl Display for Boolean {
 pub struct If {
     pub token: Token,
     pub condition: Box<Expression>,
-    pub consequence: Block,
-    pub alternative: Option<Block>,
+    pub consequence: statement::Block,
+    pub alternative: Option<statement::Block>,
 }
 
 impl NodeInterface for If {
@@ -205,6 +214,38 @@ impl Display for If {
             out.push_str("else ");
             out.push_str(&alternative.to_string());
         }
+
+        write!(f, "{}", out)
+    }
+}
+
+#[derive(Debug)]
+pub struct FunctionLiteral {
+    pub token: Token,
+    pub parameters: Vec<Identifier>,
+    pub body: statement::Block,
+}
+
+impl NodeInterface for FunctionLiteral {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+}
+
+impl Display for FunctionLiteral {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut out = self.token_literal();
+
+        out.push('(');
+
+        let mut params: Vec<String> = Vec::new();
+        for param in self.parameters.iter() {
+            params.push(param.to_string());
+        }
+
+        out.push_str(&params.join(","));
+        out.push(')');
+        out.push_str(&self.body.to_string());
 
         write!(f, "{}", out)
     }

@@ -156,6 +156,61 @@ pub fn parse_block_statement(parser: &mut Parser) -> statement::Block {
     statement::Block { token, statements }
 }
 
+pub fn parse_function_literal(parser: &mut Parser) -> expression::Expression {
+    let token = parser.cur_token.clone();
+
+    if !parser.expect_peek(TokenType::LParen) {
+        return Expression::None;
+    };
+
+    let parameters = parse_function_parameters(parser);
+
+    if !parser.expect_peek(TokenType::LBrace) {
+        return Expression::None;
+    };
+
+    let body = parse_block_statement(parser);
+
+    Expression::FunctionLiteral(expression::FunctionLiteral {
+        token,
+        parameters,
+        body,
+    })
+}
+
+fn parse_function_parameters(parser: &mut Parser) -> Vec<expression::Identifier> {
+    let mut identifier: Vec<expression::Identifier> = Vec::new();
+
+    if parser.peek_token_is(&TokenType::RParen) {
+        println!("got closing paren");
+        parser.next_token();
+        return identifier;
+    };
+
+    parser.next_token();
+
+    identifier.push(expression::Identifier {
+        token: parser.cur_token.clone(),
+        value: parser.cur_token.literal.clone(),
+    });
+
+    while parser.peek_token_is(&TokenType::Comma) {
+        parser.next_token();
+        parser.next_token();
+
+        identifier.push(expression::Identifier {
+            token: parser.cur_token.clone(),
+            value: parser.cur_token.literal.clone(),
+        });
+    }
+
+    if !parser.expect_peek(TokenType::RParen) {
+        panic!("Was expecting next token to be RParen");
+    }
+
+    identifier
+}
+
 #[derive(PartialEq, PartialOrd)]
 pub enum Precedence {
     Lowest,
