@@ -448,3 +448,74 @@ fn test_bool() {
         );
     }
 }
+
+#[test]
+fn test_if_expression() {
+    let input = "if (x < y) { x }".to_string();
+
+    let l = Box::new(lexer::Lexer::new(input));
+    let mut p = parser::Parser::new(l);
+    let program = match p.parse_program() {
+        Some(program) => program,
+        None => panic!("Was expecting Some from program got none"),
+    };
+    check_parser_errors(&p);
+
+    assert_eq!(
+        program.statements.len(),
+        1,
+        "program.statements does not contain 1 statement. got={}",
+        program.statements.len()
+    );
+
+    let stmt = match program.statements[0].expression_statement() {
+        Some(stmt) => stmt,
+        None => panic!("Was expecting a BlockStatement got None"),
+    };
+
+    let if_exp = match stmt.expression.if_expression() {
+        Some(exp) => exp,
+        None => panic!("Was expecting a IfExpression got none"),
+    };
+
+    assert!(
+        Option::is_none(&if_exp.alternative),
+        "expected alternative None, got {:#?}",
+        if_exp.alternative
+    );
+}
+
+#[test]
+fn test_if_esle_expression() {
+    let input = "if (x < y) { x } else { y }".to_string();
+
+    let l = Box::new(lexer::Lexer::new(input));
+    let mut p = parser::Parser::new(l);
+    let program = match p.parse_program() {
+        Some(program) => program,
+        None => panic!("Was expecting Some from program got none"),
+    };
+    check_parser_errors(&p);
+
+    assert_eq!(
+        program.statements.len(),
+        1,
+        "program.statements does not contain 1 statement. got={}",
+        program.statements.len()
+    );
+
+    let stmt = match program.statements[0].expression_statement() {
+        Some(stmt) => stmt,
+        None => panic!("Was expecting a BlockStatement got None"),
+    };
+
+    let if_exp = match stmt.expression.if_expression() {
+        Some(exp) => exp,
+        None => panic!("Was expecting a IfExpression got none"),
+    };
+
+    assert!(
+        !Option::is_none(&if_exp.alternative),
+        "expected alternative to be Some(BlockStatement) got None"
+    );
+}
