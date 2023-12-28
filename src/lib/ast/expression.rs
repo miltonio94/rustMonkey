@@ -14,6 +14,7 @@ pub enum Expression {
     Boolean(Boolean),
     If(If),
     FunctionLiteral(FunctionLiteral),
+    Call(Call),
 }
 
 impl Expression {
@@ -72,6 +73,13 @@ impl Expression {
             _ => None,
         }
     }
+
+    pub fn call_expression(&self) -> Option<&Call> {
+        match self {
+            Self::Call(call) => Some(call),
+            _ => None,
+        }
+    }
 }
 
 impl Display for Expression {
@@ -85,6 +93,7 @@ impl Display for Expression {
             Self::Boolean(boolean) => write!(f, "{}", boolean.to_string()),
             Self::If(if_exp) => write!(f, "{}", if_exp.to_string()),
             Self::FunctionLiteral(function) => write!(f, "{}", function.to_string()),
+            Self::Call(call) => write!(f, "{}", call.to_string()),
         }
     }
 }
@@ -246,6 +255,37 @@ impl Display for FunctionLiteral {
         out.push_str(&params.join(", "));
         out.push(')');
         out.push_str(&self.body.to_string());
+
+        write!(f, "{}", out)
+    }
+}
+
+#[derive(Debug)]
+pub struct Call {
+    pub token: Token,
+    pub function: Box<Expression>,
+    pub arguments: Vec<Expression>,
+}
+
+impl NodeInterface for Call {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+}
+
+impl Display for Call {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut out = self.function.to_string();
+
+        let mut args: Vec<String> = Vec::new();
+
+        for arg in self.arguments.iter() {
+            args.push(arg.to_string());
+        }
+
+        out.push('(');
+        out.push_str(&args.join(", "));
+        out.push(')');
 
         write!(f, "{}", out)
     }
