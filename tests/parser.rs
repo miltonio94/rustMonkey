@@ -563,3 +563,51 @@ fn test_function_literal_parsing() {
         function.body.statements.len()
     );
 }
+
+#[test]
+fn test_call_expression_parsing() {
+    let input = "add(1, 2 * 3, 4 + 5);".to_string();
+    let l = Box::new(lexer::Lexer::new(input));
+    let mut p = parser::Parser::new(l);
+    let program = match p.parse_program() {
+        Some(program) => program,
+        None => panic!("Was expecting Some from program got None"),
+    };
+    check_parser_errors(&p);
+
+    assert_eq!(
+        program.statements.len(),
+        1,
+        "program.statements does not contain 1 statement. got={}",
+        program.statements.len()
+    );
+
+    let stmt = match program.statements[0].expression_statement() {
+        Some(stmt) => stmt,
+        None => panic!("Was expecting a Expression got None"),
+    };
+
+    let call = match stmt.expression.call_expression() {
+        Some(call) => call,
+        None => panic!("Was expecting Call got None"),
+    };
+
+    let ident = match call.function.identifier() {
+        Some(ident) => ident,
+        None => panic!("Was expecting an Identifier got None"),
+    };
+
+    assert_eq!(
+        ident.value,
+        "add".to_string(),
+        "Was expecting identifier to be 'add' got '{}' instead",
+        ident.value
+    );
+
+    assert_eq!(
+        call.arguments.len(),
+        3,
+        "Was expecting function to have 3 parameters got {} instead",
+        call.arguments.len()
+    );
+}

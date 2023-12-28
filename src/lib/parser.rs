@@ -171,6 +171,7 @@ impl Parser {
             TokenType::NotEq => Some(parse_infix_expression),
             TokenType::Lt => Some(parse_infix_expression),
             TokenType::Gt => Some(parse_infix_expression),
+            TokenType::LParen => Some(parse_call_expression),
             _ => None,
         }
     }

@@ -211,6 +211,46 @@ fn parse_function_parameters(parser: &mut Parser) -> Vec<expression::Identifier>
     identifier
 }
 
+pub fn parse_call_expression(parser: &mut Parser, function: Box<Expression>) -> Expression {
+    let arguments = parse_call_arguments(parser);
+
+    Expression::Call(expression::Call {
+        token: parser.cur_token.clone(),
+        function,
+        arguments,
+    })
+}
+
+fn parse_call_arguments(parser: &mut Parser) -> Vec<Expression> {
+    let mut args: Vec<Expression> = Vec::new();
+
+    if parser.peek_token_is(&TokenType::RParen) {
+        parser.next_token();
+        return args;
+    }
+
+    parser.next_token();
+
+    if let Some(arg) = parser.parse_expression(Precedence::Lowest) {
+        args.push(arg);
+    }
+
+    while parser.peek_token_is(&TokenType::Comma) {
+        parser.next_token();
+        parser.next_token();
+
+        if let Some(arg) = parser.parse_expression(Precedence::Lowest) {
+            args.push(arg);
+        }
+    }
+
+    if !parser.expect_peek(TokenType::RParen) {
+        panic!("Was expecting a closing bracket");
+    };
+
+    args
+}
+
 #[derive(PartialEq, PartialOrd)]
 pub enum Precedence {
     Lowest,
@@ -225,14 +265,15 @@ pub enum Precedence {
 impl Precedence {
     pub fn precedences(token: &TokenType) -> Precedence {
         match token {
-            TokenType::Eq => Precedence::Equals,
-            TokenType::NotEq => Precedence::Equals,
-            TokenType::Lt => Precedence::LessGreater,
-            TokenType::Gt => Precedence::LessGreater,
-            TokenType::Plus => Precedence::Sum,
-            TokenType::Minus => Precedence::Sum,
-            TokenType::Slash => Precedence::Product,
-            TokenType::Asterisk => Precedence::Product,
+            TokenType::Eq => Self::Equals,
+            TokenType::NotEq => Self::Equals,
+            TokenType::Lt => Self::LessGreater,
+            TokenType::Gt => Self::LessGreater,
+            TokenType::Plus => Self::Sum,
+            TokenType::Minus => Self::Sum,
+            TokenType::Slash => Self::Product,
+            TokenType::Asterisk => Self::Product,
+            TokenType::LParen => Self::Call,
             _ => Precedence::Lowest,
         }
     }
