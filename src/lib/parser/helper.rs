@@ -1,12 +1,5 @@
-use crate::ast::expression::{
-    Boolean, Expression, Identifier, IfExpression, InfixExpression, IntegerLiteral,
-    PrefixExpression,
-};
-
-use crate::ast::statement::{
-    BlockStatement, ExpressionStatement, LetStatement, ReturnStatement, Statement,
-};
-
+use crate::ast::expression::{self, Expression};
+use crate::ast::statement::{self, Statement};
 use crate::parser::Parser;
 use crate::token::TokenType;
 
@@ -14,7 +7,7 @@ pub type PrefixParseFn = fn(&mut Parser) -> Expression;
 pub type InfixParseFn = fn(&mut Parser, Box<Expression>) -> Expression;
 
 pub fn parse_identifier(parser: &mut Parser) -> Expression {
-    Expression::Identifier(Identifier {
+    Expression::Identifier(expression::Identifier {
         token: parser.cur_token.clone(),
         value: parser.cur_token.literal.clone(),
     })
@@ -34,7 +27,7 @@ pub fn parse_integer_literal(parser: &mut Parser) -> Expression {
         }
     };
 
-    Expression::IntegerLiteral(IntegerLiteral {
+    Expression::IntegerLiteral(expression::IntegerLiteral {
         token: parser.cur_token.clone(),
         value,
     })
@@ -51,7 +44,7 @@ pub fn parse_prefix_expression(parser: &mut Parser) -> Expression {
         None => return Expression::None,
     });
 
-    Expression::PrefixExpression(PrefixExpression {
+    Expression::PrefixExpression(expression::PrefixExpression {
         token,
         operator,
         right,
@@ -70,7 +63,7 @@ pub fn parse_infix_expression(parser: &mut Parser, left: Box<Expression>) -> Exp
         None => Expression::None,
     });
 
-    return Expression::InfixExpression(InfixExpression {
+    return Expression::InfixExpression(expression::InfixExpression {
         token,
         operator,
         right,
@@ -79,7 +72,7 @@ pub fn parse_infix_expression(parser: &mut Parser, left: Box<Expression>) -> Exp
 }
 
 pub fn parse_boolean(parser: &mut Parser) -> Expression {
-    Expression::BooleanExpression(Boolean {
+    Expression::BooleanExpression(expression::Boolean {
         token: parser.cur_token.clone(),
         value: parser.cur_token_is(TokenType::True),
     })
@@ -123,7 +116,7 @@ pub fn parse_if_expression(parser: &mut Parser) -> Expression {
 
     let consequence = parse_block_statement(parser);
 
-    let mut if_exp = IfExpression {
+    let mut if_exp = expression::IfExpression {
         token,
         condition,
         consequence,
@@ -143,7 +136,7 @@ pub fn parse_if_expression(parser: &mut Parser) -> Expression {
     Expression::IfExpression(if_exp)
 }
 
-pub fn parse_block_statement(parser: &mut Parser) -> BlockStatement {
+pub fn parse_block_statement(parser: &mut Parser) -> statement::BlockStatement {
     let token = parser.cur_token.clone();
 
     let mut statements: Vec<Statement> = Vec::new();
@@ -160,7 +153,7 @@ pub fn parse_block_statement(parser: &mut Parser) -> BlockStatement {
         parser.next_token();
     }
 
-    BlockStatement { token, statements }
+    statement::BlockStatement { token, statements }
 }
 
 #[derive(PartialEq, PartialOrd)]

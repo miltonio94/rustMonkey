@@ -250,7 +250,7 @@ fn test_parsing_prefix_expression() {
             None => panic!("program.Statements[0].expression_statement() returned None"),
         };
 
-        let mut exp = match stmt.expression.prefix_expression() {
+        let exp = match stmt.expression.prefix_expression() {
             Some(exp) => exp,
             None => panic!("stmt.expression is not a PrefixExpression, got None"),
         };

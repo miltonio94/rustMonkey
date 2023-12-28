@@ -1,18 +1,11 @@
 mod helper;
 
-use crate::ast::expression::{
-    Boolean, Expression, Identifier, IfExpression, InfixExpression, IntegerLiteral,
-    PrefixExpression,
-};
-
-use crate::ast::statement::{
-    BlockStatement, ExpressionStatement, LetStatement, ReturnStatement, Statement,
-};
+use crate::ast::expression::{self, Expression};
+use crate::ast::statement::{self, Statement};
 use crate::ast::Program;
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
 use helper::*;
-use std::io::{self, Write};
 
 #[derive(Debug)]
 pub struct Parser {
@@ -72,14 +65,14 @@ impl Parser {
         }
     }
 
-    fn parse_let_statement(&mut self) -> Option<LetStatement> {
+    fn parse_let_statement(&mut self) -> Option<statement::LetStatement> {
         let token = self.cur_token.clone();
 
         if !self.expect_peek(TokenType::Ident) {
             return None;
         }
 
-        let name = Identifier {
+        let name = expression::Identifier {
             token: self.cur_token.clone(),
             value: self.cur_token.to_string(),
         };
@@ -93,7 +86,7 @@ impl Parser {
             self.next_token();
         }
 
-        Some(LetStatement {
+        Some(statement::LetStatement {
             token,
             name,
             value: Expression::None,
@@ -129,8 +122,8 @@ impl Parser {
         ));
     }
 
-    fn parse_return_statement(&mut self) -> Option<ReturnStatement> {
-        let stmt = ReturnStatement {
+    fn parse_return_statement(&mut self) -> Option<statement::ReturnStatement> {
+        let stmt = statement::ReturnStatement {
             token: self.cur_token.clone(),
             return_value: Expression::None,
         };
@@ -140,8 +133,8 @@ impl Parser {
         Some(stmt)
     }
 
-    fn parse_expression_statement(&mut self) -> Option<ExpressionStatement> {
-        let stmt = ExpressionStatement {
+    fn parse_expression_statement(&mut self) -> Option<statement::ExpressionStatement> {
+        let stmt = statement::ExpressionStatement {
             token: self.cur_token.clone(),
             expression: self.parse_expression(Precedence::Lowest)?,
         };
