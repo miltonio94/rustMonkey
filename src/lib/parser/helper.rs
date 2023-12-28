@@ -44,7 +44,7 @@ pub fn parse_prefix_expression(parser: &mut Parser) -> Expression {
         None => return Expression::None,
     });
 
-    Expression::PrefixExpression(expression::PrefixExpression {
+    Expression::Prefix(expression::Prefix {
         token,
         operator,
         right,
@@ -63,7 +63,7 @@ pub fn parse_infix_expression(parser: &mut Parser, left: Box<Expression>) -> Exp
         None => Expression::None,
     });
 
-    return Expression::InfixExpression(expression::InfixExpression {
+    return Expression::Infix(expression::Infix {
         token,
         operator,
         right,
@@ -72,7 +72,7 @@ pub fn parse_infix_expression(parser: &mut Parser, left: Box<Expression>) -> Exp
 }
 
 pub fn parse_boolean(parser: &mut Parser) -> Expression {
-    Expression::BooleanExpression(expression::Boolean {
+    Expression::Boolean(expression::Boolean {
         token: parser.cur_token.clone(),
         value: parser.cur_token_is(TokenType::True),
     })
@@ -116,7 +116,7 @@ pub fn parse_if_expression(parser: &mut Parser) -> Expression {
 
     let consequence = parse_block_statement(parser);
 
-    let mut if_exp = expression::IfExpression {
+    let mut if_exp = expression::If {
         token,
         condition,
         consequence,
@@ -133,10 +133,10 @@ pub fn parse_if_expression(parser: &mut Parser) -> Expression {
         if_exp.alternative = Some(parse_block_statement(parser));
     }
 
-    Expression::IfExpression(if_exp)
+    Expression::If(if_exp)
 }
 
-pub fn parse_block_statement(parser: &mut Parser) -> statement::BlockStatement {
+pub fn parse_block_statement(parser: &mut Parser) -> statement::Block {
     let token = parser.cur_token.clone();
 
     let mut statements: Vec<Statement> = Vec::new();
@@ -153,7 +153,7 @@ pub fn parse_block_statement(parser: &mut Parser) -> statement::BlockStatement {
         parser.next_token();
     }
 
-    statement::BlockStatement { token, statements }
+    statement::Block { token, statements }
 }
 
 #[derive(PartialEq, PartialOrd)]

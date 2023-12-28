@@ -1,7 +1,7 @@
 mod helper;
 
-use crate::ast::expression::{self, Expression};
-use crate::ast::statement::{self, Statement};
+use crate::ast::expression::{self};
+use crate::ast::statement::{self};
 use crate::ast::Program;
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
@@ -51,21 +51,21 @@ impl Parser {
         Some(program)
     }
 
-    fn parse_statement(&mut self) -> Option<Statement> {
+    fn parse_statement(&mut self) -> Option<statement::Statement> {
         match self.cur_token.token_type {
             TokenType::Let => self
                 .parse_let_statement()
-                .map(|stmt| Statement::LetStatement(stmt)),
+                .map(|stmt| statement::Statement::Let(stmt)),
             TokenType::Return => self
                 .parse_return_statement()
-                .map(|stmt| Statement::ReturnStatement(stmt)),
+                .map(|stmt| statement::Statement::Return(stmt)),
             _ => self
                 .parse_expression_statement()
-                .map(|stmt| Statement::ExpressionStatement(stmt)),
+                .map(|stmt| statement::Statement::Expression(stmt)),
         }
     }
 
-    fn parse_let_statement(&mut self) -> Option<statement::LetStatement> {
+    fn parse_let_statement(&mut self) -> Option<statement::Let> {
         let token = self.cur_token.clone();
 
         if !self.expect_peek(TokenType::Ident) {
@@ -86,10 +86,10 @@ impl Parser {
             self.next_token();
         }
 
-        Some(statement::LetStatement {
+        Some(statement::Let {
             token,
             name,
-            value: Expression::None,
+            value: expression::Expression::None,
         })
     }
 
@@ -122,10 +122,10 @@ impl Parser {
         ));
     }
 
-    fn parse_return_statement(&mut self) -> Option<statement::ReturnStatement> {
-        let stmt = statement::ReturnStatement {
+    fn parse_return_statement(&mut self) -> Option<statement::Return> {
+        let stmt = statement::Return {
             token: self.cur_token.clone(),
-            return_value: Expression::None,
+            return_value: expression::Expression::None,
         };
 
         self.next_token();
@@ -133,8 +133,8 @@ impl Parser {
         Some(stmt)
     }
 
-    fn parse_expression_statement(&mut self) -> Option<statement::ExpressionStatement> {
-        let stmt = statement::ExpressionStatement {
+    fn parse_expression_statement(&mut self) -> Option<statement::Expression> {
+        let stmt = statement::Expression {
             token: self.cur_token.clone(),
             expression: self.parse_expression(Precedence::Lowest)?,
         };
@@ -174,7 +174,7 @@ impl Parser {
         }
     }
 
-    fn parse_expression(&mut self, precedence: Precedence) -> Option<Expression> {
+    fn parse_expression(&mut self, precedence: Precedence) -> Option<expression::Expression> {
         let prefix = self.prefix_parse_fns(self.cur_token.token_type.clone())?;
 
         let mut left_exp = Box::new(prefix(self));

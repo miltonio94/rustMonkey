@@ -1,5 +1,5 @@
+use super::statement::Block;
 use crate::ast::NodeInterface;
-use super::statement::BlockStatement;
 use crate::token::Token;
 use std::fmt::Display;
 
@@ -9,10 +9,10 @@ pub enum Expression {
     None,
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
-    PrefixExpression(PrefixExpression),
-    InfixExpression(InfixExpression),
-    BooleanExpression(Boolean),
-    IfExpression(IfExpression),
+    Prefix(Prefix),
+    Infix(Infix),
+    Boolean(Boolean),
+    If(If),
 }
 
 impl Expression {
@@ -37,30 +37,30 @@ impl Expression {
         }
     }
 
-    pub fn prefix_expression(&self) -> Option<&PrefixExpression> {
+    pub fn prefix_expression(&self) -> Option<&Prefix> {
         match self {
-            Self::PrefixExpression(prefix) => Some(&prefix),
+            Self::Prefix(prefix) => Some(&prefix),
             _ => None,
         }
     }
 
-    pub fn infix_expression(&self) -> Option<&InfixExpression> {
+    pub fn infix_expression(&self) -> Option<&Infix> {
         match self {
-            Self::InfixExpression(infix) => Some(&infix),
+            Self::Infix(infix) => Some(&infix),
             _ => None,
         }
     }
 
     pub fn boolean_expression(&self) -> Option<&Boolean> {
         match self {
-            Self::BooleanExpression(boolean) => Some(boolean),
+            Self::Boolean(boolean) => Some(boolean),
             _ => None,
         }
     }
 
-    pub fn if_expression(&self) -> Option<&IfExpression> {
+    pub fn if_expression(&self) -> Option<&If> {
         match self {
-            Self::IfExpression(if_exp) => Some(if_exp),
+            Self::If(if_exp) => Some(if_exp),
             _ => None,
         }
     }
@@ -72,10 +72,10 @@ impl Display for Expression {
             Self::None => write!(f, ""),
             Self::Identifier(idnt) => write!(f, "{}", idnt.to_string()),
             Self::IntegerLiteral(int) => write!(f, "{}", int.to_string()),
-            Self::PrefixExpression(prefix) => write!(f, "{}", prefix.to_string()),
-            Self::InfixExpression(infix) => write!(f, "{}", infix.to_string()),
-            Self::BooleanExpression(boolean) => write!(f, "{}", boolean.to_string()),
-            Self::IfExpression(if_exp) => write!(f, "{}", if_exp.to_string()),
+            Self::Prefix(prefix) => write!(f, "{}", prefix.to_string()),
+            Self::Infix(infix) => write!(f, "{}", infix.to_string()),
+            Self::Boolean(boolean) => write!(f, "{}", boolean.to_string()),
+            Self::If(if_exp) => write!(f, "{}", if_exp.to_string()),
         }
     }
 }
@@ -117,39 +117,39 @@ impl NodeInterface for IntegerLiteral {
 }
 
 #[derive(Debug)]
-pub struct PrefixExpression {
+pub struct Prefix {
     pub token: Token,
     pub operator: String,
     pub right: Box<Expression>,
 }
 
-impl Display for PrefixExpression {
+impl Display for Prefix {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "({}{})", self.operator, self.right.to_string())
     }
 }
 
-impl NodeInterface for PrefixExpression {
+impl NodeInterface for Prefix {
     fn token_literal(&self) -> String {
         format!("{}", self.token.literal)
     }
 }
 
 #[derive(Debug)]
-pub struct InfixExpression {
+pub struct Infix {
     pub token: Token,
     pub left: Box<Expression>,
     pub operator: String,
     pub right: Box<Expression>,
 }
 
-impl NodeInterface for InfixExpression {
+impl NodeInterface for Infix {
     fn token_literal(&self) -> String {
         format!("{}", self.token.literal)
     }
 }
 
-impl Display for InfixExpression {
+impl Display for Infix {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -180,20 +180,20 @@ impl Display for Boolean {
 }
 
 #[derive(Debug)]
-pub struct IfExpression {
+pub struct If {
     pub token: Token,
     pub condition: Box<Expression>,
-    pub consequence: BlockStatement,
-    pub alternative: Option<BlockStatement>,
+    pub consequence: Block,
+    pub alternative: Option<Block>,
 }
 
-impl NodeInterface for IfExpression {
+impl NodeInterface for If {
     fn token_literal(&self) -> String {
         self.token.literal.clone()
     }
 }
 
-impl Display for IfExpression {
+impl Display for If {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = String::from("if");
 
