@@ -1,10 +1,17 @@
-use crate::ast::{
-    BlockStatement, Boolean, Expression, ExpressionStatement, Identifier, IfExpression,
-    InfixExpression, IntegerLiteral, LetStatement, PrefixExpression, Program, ReturnStatement,
-    Statement,
+mod helper;
+
+use crate::ast::expression::{
+    Boolean, Expression, Identifier, IfExpression, InfixExpression, IntegerLiteral,
+    PrefixExpression,
 };
+
+use crate::ast::statement::{
+    BlockStatement, ExpressionStatement, LetStatement, ReturnStatement, Statement,
+};
+use crate::ast::Program;
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenType};
+use helper::*;
 use std::io::{self, Write};
 
 #[derive(Debug)]
@@ -18,9 +25,6 @@ pub struct Parser {
 
 // TODO: Explore making parse functions return a result
 // errors maybe should be a list of Errors and maybe we should have our own error type
-
-type PrefixParseFn = fn(&mut Parser) -> Expression;
-type InfixParseFn = fn(&mut Parser, Box<Expression>) -> Expression;
 
 impl Parser {
     pub fn new(mut lex: Box<Lexer>) -> Self {
@@ -202,182 +206,5 @@ impl Parser {
 
     fn cur_precedence(&self) -> Precedence {
         Precedence::precedences(&self.cur_token.token_type)
-    }
-}
-
-fn parse_identifier(parser: &mut Parser) -> Expression {
-    Expression::Identifier(Identifier {
-        token: parser.cur_token.clone(),
-        value: parser.cur_token.literal.clone(),
-    })
-}
-
-fn parse_integer_literal(parser: &mut Parser) -> Expression {
-    let value: i64 = match parser.cur_token.literal.parse() {
-        Ok(val) => val,
-        Err(err) => {
-            //
-            parser.errors.push(format!(
-                "could not parse {} as integer. Err: {}",
-                parser.cur_token.literal.clone(),
-                err.to_string()
-            ));
-            return Expression::None;
-        }
-    };
-
-    Expression::IntegerLiteral(IntegerLiteral {
-        token: parser.cur_token.clone(),
-        value,
-    })
-}
-
-fn parse_prefix_expression(parser: &mut Parser) -> Expression {
-    let token = parser.cur_token.clone();
-    let operator = parser.cur_token.literal.clone();
-
-    parser.next_token();
-
-    let right = Box::new(match parser.parse_expression(Precedence::Prefix) {
-        Some(exp) => exp,
-        None => return Expression::None,
-    });
-
-    Expression::PrefixExpression(PrefixExpression {
-        token,
-        operator,
-        right,
-    })
-}
-
-fn parse_infix_expression(parser: &mut Parser, left: Box<Expression>) -> Expression {
-    let token = parser.cur_token.clone();
-    let operator = parser.cur_token.literal.clone();
-
-    let precedence = parser.cur_precedence();
-    parser.next_token();
-
-    let right = Box::new(match parser.parse_expression(precedence) {
-        Some(exp) => exp,
-        None => Expression::None,
-    });
-
-    return Expression::InfixExpression(InfixExpression {
-        token,
-        operator,
-        right,
-        left,
-    });
-}
-
-fn parse_boolean(parser: &mut Parser) -> Expression {
-    Expression::BooleanExpression(Boolean {
-        token: parser.cur_token.clone(),
-        value: parser.cur_token_is(TokenType::True),
-    })
-}
-
-fn parse_grouped_expression(parser: &mut Parser) -> Expression {
-    parser.next_token();
-
-    let exp = match parser.parse_expression(Precedence::Lowest) {
-        Some(exp) => exp,
-        None => return Expression::None,
-    };
-
-    if !parser.expect_peek(TokenType::RParen) {
-        return Expression::None;
-    }
-
-    exp
-}
-
-fn parse_if_expression(parser: &mut Parser) -> Expression {
-    let token = parser.cur_token.clone();
-
-    if !parser.expect_peek(TokenType::LParen) {
-        return Expression::None;
-    };
-
-    parser.next_token();
-    let condition = match parser.parse_expression(Precedence::Lowest) {
-        Some(exp) => Box::new(exp),
-        None => Box::new(Expression::None),
-    };
-
-    if !parser.expect_peek(TokenType::RParen) {
-        return Expression::None;
-    };
-
-    if !parser.expect_peek(TokenType::LBrace) {
-        return Expression::None;
-    };
-
-    let consequence = parse_block_statement(parser);
-
-    let mut if_exp = IfExpression {
-        token,
-        condition,
-        consequence,
-        alternative: None,
-    };
-
-    if parser.peek_token_is(&TokenType::Else) {
-        parser.next_token();
-
-        if !parser.peek_token_is(&TokenType::LBrace) {
-            return Expression::None;
-        }
-
-        if_exp.alternative = Some(parse_block_statement(parser));
-    }
-
-    Expression::IfExpression(if_exp)
-}
-
-fn parse_block_statement(parser: &mut Parser) -> BlockStatement {
-    let token = parser.cur_token.clone();
-
-    let mut statements: Vec<Statement> = Vec::new();
-
-    parser.next_token();
-
-    while !parser.cur_token_is(TokenType::RBrace) && !parser.cur_token_is(TokenType::EOF) {
-        let stmt = parser.parse_statement();
-
-        if let Some(stmt) = stmt {
-            statements.push(stmt);
-        }
-
-        parser.next_token();
-    }
-
-    BlockStatement { token, statements }
-}
-
-#[derive(PartialEq, PartialOrd)]
-enum Precedence {
-    Lowest,
-    Equals,
-    LessGreater,
-    Sum,
-    Product,
-    Prefix,
-    Call,
-}
-
-impl Precedence {
-    fn precedences(token: &TokenType) -> Precedence {
-        match token {
-            TokenType::Eq => Precedence::Equals,
-            TokenType::NotEq => Precedence::Equals,
-            TokenType::Lt => Precedence::LessGreater,
-            TokenType::Gt => Precedence::LessGreater,
-            TokenType::Plus => Precedence::Sum,
-            TokenType::Minus => Precedence::Sum,
-            TokenType::Slash => Precedence::Product,
-            TokenType::Asterisk => Precedence::Product,
-            _ => Precedence::Lowest,
-        }
     }
 }
