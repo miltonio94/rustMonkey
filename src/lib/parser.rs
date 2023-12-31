@@ -81,16 +81,14 @@ impl Parser {
             return None;
         }
 
-        // TODO: Skipping expression until we encounter a semicolon
-        while !self.cur_token_is(TokenType::Semicolon) {
-            self.next_token();
-        }
+        self.next_token();
 
-        Some(statement::Let {
-            token,
-            name,
-            value: expression::Expression::None,
-        })
+        let value = match self.parse_expression(Precedence::Lowest) {
+            Some(exp) => exp,
+            None => panic!("was expecting Some(Expression) got None"),
+        };
+
+        Some(statement::Let { token, name, value })
     }
 
     fn cur_token_is(&self, t: TokenType) -> bool {
@@ -123,14 +121,19 @@ impl Parser {
     }
 
     fn parse_return_statement(&mut self) -> Option<statement::Return> {
-        let stmt = statement::Return {
-            token: self.cur_token.clone(),
-            return_value: expression::Expression::None,
-        };
+        let token = self.cur_token.clone();
 
         self.next_token();
 
-        Some(stmt)
+        let return_value = match self.parse_expression(Precedence::Lowest) {
+            Some(exp) => exp,
+            None => panic!("Was expecting Some(Expression) got None"),
+        };
+
+        Some(statement::Return {
+            token,
+            return_value,
+        })
     }
 
     fn parse_expression_statement(&mut self) -> Option<statement::Expression> {
