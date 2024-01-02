@@ -5,8 +5,6 @@ use std::fmt::Display;
 
 #[derive(Debug)]
 pub enum Expression {
-    // TODO: Remove None from here. We should be using Option instead
-    None,
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
     Prefix(Prefix),
@@ -18,13 +16,6 @@ pub enum Expression {
 }
 
 impl Expression {
-    pub fn is_none(&self) -> bool {
-        match self {
-            Self::None => true,
-            _ => false,
-        }
-    }
-
     pub fn identifier(&self) -> Option<&Identifier> {
         match self {
             Self::Identifier(idnt) => Some(idnt),
@@ -85,7 +76,6 @@ impl Expression {
 impl Display for Expression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::None => write!(f, ""),
             Self::Identifier(idnt) => write!(f, "{}", idnt.to_string()),
             Self::IntegerLiteral(int) => write!(f, "{}", int.to_string()),
             Self::Prefix(prefix) => write!(f, "{}", prefix.to_string()),

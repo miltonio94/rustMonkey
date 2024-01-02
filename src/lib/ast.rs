@@ -18,8 +18,8 @@ pub enum Node {
 impl NodeInterface for Node {
     fn token_literal(&self) -> String {
         match self {
-            Self::Statement(statement) => statement.token_literal(),
-            Self::Expression(expression) => expression.to_string(), // TODO: remove this,
+            Self::Statement(statement) => statement.to_string(),
+            Self::Expression(expression) => expression.to_string(),
         }
     }
 }

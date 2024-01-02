@@ -7,7 +7,6 @@ pub enum TokenType {
     EOF,
 
     // Identifier + literals
-    // TODO: Change from Vec<u8> to &[u8]
     Ident,
     Int,
 
