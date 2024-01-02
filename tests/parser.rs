@@ -24,10 +24,7 @@ let foobar = 838383;
 "#;
     let l = Box::new(lexer::Lexer::new(input.to_string()));
     let mut p = parser::Parser::new(l);
-    let program = match p.parse_program() {
-        Some(program) => program,
-        None => panic!("parse_program returned a None"),
-    };
+    let program = p.parse_program().unwrap();
     check_parser_errors(&p);
 
     assert_eq!(
@@ -46,10 +43,7 @@ let foobar = 838383;
 }
 
 fn test_let(s: &statement::Statement, name: String) {
-    let let_statement = match s.let_statement() {
-        Some(let_statement) => let_statement,
-        None => panic!("Expected LetStatement, got none"),
-    };
+    let let_statement = s.let_statement().unwrap();
 
     assert_eq!(
         let_statement.token_literal(),
@@ -80,10 +74,7 @@ fn test_return_statement() {
     let l = Box::new(lexer::Lexer::new(input));
     let mut p = parser::Parser::new(l);
 
-    let program = match p.parse_program() {
-        Some(p) => p,
-        None => panic!("parse_program returned a None"),
-    };
+    let program = p.parse_program().unwrap();
 
     check_parser_errors(&p);
 
@@ -94,7 +85,7 @@ fn test_return_statement() {
         program.statements.len()
     );
 
-    for stmt in program.statements.iter() {
+    for (i, stmt) in program.statements.iter().enumerate() {
         let return_statement = match stmt.return_statement() {
             Some(stmt) => stmt,
             None => panic!("expected ReturnStatement got None"),
@@ -106,6 +97,23 @@ fn test_return_statement() {
             "return_statement.token_literal() not 'return', got {} instead",
             return_statement.token.to_string()
         );
+
+        assert!(return_statement.return_value.is_some());
+
+        let ret_val = return_statement.return_value.as_ref().unwrap();
+        let int = ret_val.integer_literal().unwrap();
+
+        if i == 0 {
+            assert_eq!(int.value, 5)
+        }
+
+        if i == 1 {
+            assert_eq!(int.value, 10)
+        }
+
+        if i == 2 {
+            assert_eq!(int.value, 993322)
+        }
     }
 }
 
@@ -131,10 +139,7 @@ fn test_identifier() {
     let input = "foobar;".to_string();
     let l = Box::new(lexer::Lexer::new(input));
     let mut p = parser::Parser::new(l);
-    let program = match p.parse_program() {
-        Some(p) => p,
-        None => panic!("was expecting p.parse_program to return Some, got None"),
-    };
+    let program = p.parse_program().unwrap();
     check_parser_errors(&p);
 
     assert_eq!(
@@ -168,10 +173,7 @@ fn test_integer_literal() {
 
     let l = Box::new(lexer::Lexer::new(input));
     let mut p = parser::Parser::new(l);
-    let program = match p.parse_program() {
-        Some(program) => program,
-        None => panic!("p.parse_program returned None, was expecting a Program"),
-    };
+    let program = p.parse_program().unwrap();
     check_parser_errors(&p);
 
     assert_eq!(
@@ -232,10 +234,7 @@ fn test_parsing_prefix_expression() {
     for tt in prefix_test.iter() {
         let l = Box::new(lexer::Lexer::new(tt.input.clone()));
         let mut p = parser::Parser::new(l);
-        let program = match p.parse_program() {
-            Some(program) => program,
-            None => panic!("p.parse_program returned None, was expecting Some(program)"),
-        };
+        let program = p.parse_program().unwrap();
         check_parser_errors(&p);
 
         assert_eq!(
@@ -318,10 +317,7 @@ fn test_parsing_infix_expression() {
     for tt in infix_tests.iter() {
         let l = Box::new(lexer::Lexer::new(tt.input.clone()));
         let mut p = parser::Parser::new(l);
-        let program = match p.parse_program() {
-            Some(program) => program,
-            None => panic!("p.parse_program() returned None"),
-        };
+        let program = p.parse_program().unwrap();
         check_parser_errors(&p);
 
         assert_eq!(
@@ -400,10 +396,7 @@ fn test_operator_precedence_parsing() {
     for tt in tests.iter() {
         let l = Box::new(lexer::Lexer::new(tt.input.clone()));
         let mut p = parser::Parser::new(l);
-        let program = match p.parse_program() {
-            Some(program) => program,
-            None => panic!("p.parse_program() returned None"),
-        };
+        let program = p.parse_program().unwrap();
         check_parser_errors(&p);
 
         let actual = program.to_string();
@@ -434,10 +427,7 @@ fn test_bool() {
     for tt in tests.iter() {
         let l = Box::new(lexer::Lexer::new(tt.input.clone()));
         let mut p = parser::Parser::new(l);
-        let program = match p.parse_program() {
-            Some(program) => program,
-            None => panic!("p.parse_program() returned None"),
-        };
+        let program = p.parse_program().unwrap();
         check_parser_errors(&p);
 
         let actual = program.to_string();
@@ -456,10 +446,7 @@ fn test_if_expression() {
 
     let l = Box::new(lexer::Lexer::new(input));
     let mut p = parser::Parser::new(l);
-    let program = match p.parse_program() {
-        Some(program) => program,
-        None => panic!("Was expecting Some from program got none"),
-    };
+    let program = p.parse_program().unwrap();
     check_parser_errors(&p);
 
     assert_eq!(
@@ -492,10 +479,7 @@ fn test_if_esle_expression() {
 
     let l = Box::new(lexer::Lexer::new(input));
     let mut p = parser::Parser::new(l);
-    let program = match p.parse_program() {
-        Some(program) => program,
-        None => panic!("Was expecting Some from program got none"),
-    };
+    let program = p.parse_program().unwrap();
     check_parser_errors(&p);
 
     assert_eq!(
@@ -526,10 +510,7 @@ fn test_function_literal_parsing() {
     let input = "fn(x, y) {x + y};".to_string();
     let l = Box::new(lexer::Lexer::new(input));
     let mut p = parser::Parser::new(l);
-    let program = match p.parse_program() {
-        Some(program) => program,
-        None => panic!("Was expecting Some from program got None"),
-    };
+    let program = p.parse_program().unwrap();
     check_parser_errors(&p);
 
     assert_eq!(
@@ -569,10 +550,7 @@ fn test_call_expression_parsing() {
     let input = "add(1, 2 * 3, 4 + 5);".to_string();
     let l = Box::new(lexer::Lexer::new(input));
     let mut p = parser::Parser::new(l);
-    let program = match p.parse_program() {
-        Some(program) => program,
-        None => panic!("Was expecting Some from program got None"),
-    };
+    let program = p.parse_program().unwrap();
     check_parser_errors(&p);
 
     assert_eq!(

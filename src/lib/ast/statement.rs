@@ -66,7 +66,7 @@ impl Display for Statement {
 pub struct Let {
     pub token: Token,
     pub name: expression::Identifier,
-    pub value: expression::Expression,
+    pub value: Option<expression::Expression>,
 }
 
 impl NodeInterface for Let {
@@ -85,9 +85,9 @@ impl Display for Let {
             self.name.to_string()
         ));
 
-        if self.value.is_none() {
-            out.push_str(&self.value.to_string());
-        };
+        if let Some(val) = &self.value {
+            out.push_str(&val.to_string());
+        }
 
         out.push(';');
 
@@ -98,7 +98,7 @@ impl Display for Let {
 #[derive(Debug)]
 pub struct Return {
     pub token: Token,
-    pub return_value: expression::Expression,
+    pub return_value: Option<expression::Expression>,
 }
 
 impl NodeInterface for Return {
@@ -113,8 +113,8 @@ impl Display for Return {
 
         out.push_str(&format!("{} ", self.token_literal()));
 
-        if self.return_value.is_none() {
-            out.push_str(&self.return_value.to_string());
+        if let Some(value) = &self.return_value {
+            out.push_str(&value.to_string());
         }
 
         out.push(';');
