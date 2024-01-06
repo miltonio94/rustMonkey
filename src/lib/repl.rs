@@ -1,4 +1,5 @@
 use crate::lexer;
+use crate::parser::Parser;
 use crate::token;
 use std::io::Write;
 use std::io::{self, BufRead};
@@ -15,16 +16,24 @@ pub fn start(io_in: io::Stdin, mut io_out: io::Stdout) -> io::Result<()> {
         let mut line = String::new();
         scanner.read_line(&mut line)?;
 
-        let mut l = lexer::Lexer::new(line);
+        let l = Box::new(lexer::Lexer::new(line));
+        let mut p = Parser::new(l);
 
-        let mut tok = l.next_token();
-        while tok.token_type != token::TokenType::EOF {
-            let mut out = Vec::new();
-            write!(out, "{:?}\n", tok)?;
-            io_out.write_all(out.as_slice())?;
-            out.flush()?;
-
-            tok = l.next_token();
+        if let Ok(program) = p.parse_program() {
+            io_out.write_all(program.to_string().as_bytes())?;
+            io_out.write_all("\n".as_bytes())?;
+        } else {
+            let errors = p.errors();
+            print_parse_errors(&io_out, &errors)?;
+            continue;
         }
     }
+}
+
+fn print_parse_errors(mut io_out: &io::Stdout, errors: &Vec<String>) -> io::Result<()> {
+    for msg in errors.iter() {
+        io_out.write_all(msg.as_bytes())?;
+        io_out.write_all("\n".as_bytes())?;
+    }
+    Ok(())
 }
