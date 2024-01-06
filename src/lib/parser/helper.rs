@@ -38,7 +38,7 @@ pub fn parse_prefix_expression(parser: &mut Parser) -> ParserError<Expression> {
     let token = parser.cur_token.clone();
     let operator = parser.cur_token.literal.clone();
 
-    parser.next_token();
+    parser.next_token()?;
 
     let right = Box::new(parser.parse_expression(Precedence::Prefix)?);
 
@@ -57,7 +57,7 @@ pub fn parse_infix_expression(
     let operator = parser.cur_token.literal.clone();
 
     let precedence = parser.cur_precedence();
-    parser.next_token();
+    parser.next_token()?;
 
     let right = Box::new(parser.parse_expression(precedence)?);
 
@@ -72,16 +72,16 @@ pub fn parse_infix_expression(
 pub fn parse_boolean(parser: &mut Parser) -> ParserError<Expression> {
     Ok(Expression::Boolean(expression::Boolean {
         token: parser.cur_token.clone(),
-        value: parser.cur_token_is(TokenType::True),
+        value: parser.cur_token_is(&TokenType::True),
     }))
 }
 
 pub fn parse_grouped_expression(parser: &mut Parser) -> ParserError<Expression> {
-    parser.next_token();
+    parser.next_token()?;
 
     let exp = parser.parse_expression(Precedence::Lowest)?;
 
-    if !parser.expect_peek(TokenType::RParen) {
+    if !parser.expect_peek(&TokenType::RParen)? {
         return Err("Was expecting RParen".to_string());
     }
 
@@ -91,18 +91,18 @@ pub fn parse_grouped_expression(parser: &mut Parser) -> ParserError<Expression> 
 pub fn parse_if_expression(parser: &mut Parser) -> ParserError<Expression> {
     let token = parser.cur_token.clone();
 
-    if !parser.expect_peek(TokenType::LParen) {
+    if !parser.expect_peek(&TokenType::LParen)? {
         return Err("Was expecting LParen".to_string());
     };
 
-    parser.next_token();
+    parser.next_token()?;
     let condition = Box::new(parser.parse_expression(Precedence::Lowest)?);
 
-    if !parser.expect_peek(TokenType::RParen) {
+    if !parser.expect_peek(&TokenType::RParen)? {
         return Err("Was expecting RParen".to_string());
     };
 
-    if !parser.expect_peek(TokenType::LBrace) {
+    if !parser.expect_peek(&TokenType::LBrace)? {
         return Err("Was expecting LBrace".to_string());
     };
 
@@ -116,7 +116,7 @@ pub fn parse_if_expression(parser: &mut Parser) -> ParserError<Expression> {
     };
 
     if parser.peek_token_is(&TokenType::Else) {
-        parser.next_token();
+        parser.next_token()?;
 
         if !parser.peek_token_is(&TokenType::LBrace) {
             return Err("Was expecting LBrace".to_string());
@@ -129,20 +129,20 @@ pub fn parse_if_expression(parser: &mut Parser) -> ParserError<Expression> {
 }
 
 pub fn parse_block_statement(parser: &mut Parser) -> ParserError<statement::Block> {
-    let token = parser.cur_token.clone();
+    let token = parser.cur_token.to_owned();
 
     let mut statements: Vec<Statement> = Vec::new();
 
-    parser.next_token();
+    parser.next_token()?;
 
-    while !parser.cur_token_is(TokenType::RBrace) && !parser.cur_token_is(TokenType::EOF) {
+    while !parser.cur_token_is(&TokenType::RBrace) && !parser.cur_token_is(&TokenType::EOF) {
         let stmt = parser.parse_statement();
 
         if let Ok(stmt) = stmt {
             statements.push(stmt);
         }
 
-        parser.next_token();
+        parser.next_token()?;
     }
 
     Ok(statement::Block { token, statements })
@@ -151,13 +151,13 @@ pub fn parse_block_statement(parser: &mut Parser) -> ParserError<statement::Bloc
 pub fn parse_function_literal(parser: &mut Parser) -> ParserError<expression::Expression> {
     let token = parser.cur_token.clone();
 
-    if !parser.expect_peek(TokenType::LParen) {
+    if !parser.expect_peek(&TokenType::LParen)? {
         return Err("Was expecting LParen next got none".to_string());
     };
 
     let parameters = parse_function_parameters(parser)?;
 
-    if !parser.expect_peek(TokenType::LBrace) {
+    if !parser.expect_peek(&TokenType::LBrace)? {
         return Err("Was expecting LBrace next got none".to_string());
     };
 
@@ -174,11 +174,11 @@ fn parse_function_parameters(parser: &mut Parser) -> ParserError<Vec<expression:
     let mut identifier: Vec<expression::Identifier> = Vec::new();
 
     if parser.peek_token_is(&TokenType::RParen) {
-        parser.next_token();
+        parser.next_token()?;
         return Ok(identifier);
     };
 
-    parser.next_token();
+    parser.next_token()?;
 
     identifier.push(expression::Identifier {
         token: parser.cur_token.clone(),
@@ -186,8 +186,8 @@ fn parse_function_parameters(parser: &mut Parser) -> ParserError<Vec<expression:
     });
 
     while parser.peek_token_is(&TokenType::Comma) {
-        parser.next_token();
-        parser.next_token();
+        parser.next_token()?;
+        parser.next_token()?;
 
         identifier.push(expression::Identifier {
             token: parser.cur_token.clone(),
@@ -195,7 +195,7 @@ fn parse_function_parameters(parser: &mut Parser) -> ParserError<Vec<expression:
         });
     }
 
-    if !parser.expect_peek(TokenType::RParen) {
+    if !parser.expect_peek(&TokenType::RParen)? {
         return Err("Was expecting next token to be RParen".to_string());
     }
 
@@ -206,7 +206,7 @@ pub fn parse_call_expression(
     parser: &mut Parser,
     function: Box<Expression>,
 ) -> ParserError<Expression> {
-    let arguments = parse_call_arguments(parser);
+    let arguments = parse_call_arguments(parser)?;
 
     Ok(Expression::Call(expression::Call {
         token: parser.cur_token.clone(),
@@ -215,34 +215,34 @@ pub fn parse_call_expression(
     }))
 }
 
-fn parse_call_arguments(parser: &mut Parser) -> Vec<Expression> {
+fn parse_call_arguments(parser: &mut Parser) -> ParserError<Vec<Expression>> {
     let mut args: Vec<Expression> = Vec::new();
 
     if parser.peek_token_is(&TokenType::RParen) {
-        parser.next_token();
-        return args;
+        parser.next_token()?;
+        return Ok(args);
     }
 
-    parser.next_token();
+    parser.next_token()?;
 
     if let Ok(arg) = parser.parse_expression(Precedence::Lowest) {
         args.push(arg);
     }
 
     while parser.peek_token_is(&TokenType::Comma) {
-        parser.next_token();
-        parser.next_token();
+        parser.next_token()?;
+        parser.next_token()?;
 
         if let Ok(arg) = parser.parse_expression(Precedence::Lowest) {
             args.push(arg);
         }
     }
 
-    if !parser.expect_peek(TokenType::RParen) {
+    if !parser.expect_peek(&TokenType::RParen)? {
         panic!("Was expecting a closing bracket");
     };
 
-    args
+    Ok(args)
 }
 
 #[derive(PartialEq, PartialOrd)]

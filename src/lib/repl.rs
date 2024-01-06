@@ -1,6 +1,5 @@
 use crate::lexer;
 use crate::parser::Parser;
-use crate::token;
 use std::io::Write;
 use std::io::{self, BufRead};
 
@@ -17,7 +16,13 @@ pub fn start(io_in: io::Stdin, mut io_out: io::Stdout) -> io::Result<()> {
         scanner.read_line(&mut line)?;
 
         let l = Box::new(lexer::Lexer::new(line));
-        let mut p = Parser::new(l);
+        let mut p = match Parser::new(l) {
+            Ok(p) => p,
+            Err(e) => {
+                io_out.write_all("Could not create a parser".as_bytes());
+                continue;
+            }
+        };
 
         if let Ok(program) = p.parse_program() {
             io_out.write_all(program.to_string().as_bytes())?;

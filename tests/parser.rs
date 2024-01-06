@@ -23,7 +23,7 @@ let y = 10;
 let foobar = 838383;
 "#;
     let l = Box::new(lexer::Lexer::new(input.to_string()));
-    let mut p = parser::Parser::new(l);
+    let mut p = parser::Parser::new(l).unwrap();
     let program = p.parse_program().unwrap();
     check_parser_errors(&p);
 
@@ -72,7 +72,7 @@ fn test_return_statement() {
     let input = "return 5; return 10; return 993322;".to_string();
 
     let l = Box::new(lexer::Lexer::new(input));
-    let mut p = parser::Parser::new(l);
+    let mut p = parser::Parser::new(l).unwrap();
 
     let program = p.parse_program().unwrap();
 
@@ -138,7 +138,7 @@ fn check_parser_errors(p: &parser::Parser) {
 fn test_identifier() {
     let input = "foobar;".to_string();
     let l = Box::new(lexer::Lexer::new(input));
-    let mut p = parser::Parser::new(l);
+    let mut p = parser::Parser::new(l).unwrap();
     let program = p.parse_program().unwrap();
     check_parser_errors(&p);
 
@@ -172,7 +172,7 @@ fn test_integer_literal() {
     let input = "5;".to_string();
 
     let l = Box::new(lexer::Lexer::new(input));
-    let mut p = parser::Parser::new(l);
+    let mut p = parser::Parser::new(l).unwrap();
     let program = p.parse_program().unwrap();
     check_parser_errors(&p);
 
@@ -233,7 +233,7 @@ fn test_parsing_prefix_expression() {
 
     for tt in prefix_test.iter() {
         let l = Box::new(lexer::Lexer::new(tt.input.clone()));
-        let mut p = parser::Parser::new(l);
+        let mut p = parser::Parser::new(l).unwrap();
         let program = p.parse_program().unwrap();
         check_parser_errors(&p);
 
@@ -316,7 +316,7 @@ fn test_parsing_infix_expression() {
 
     for tt in infix_tests.iter() {
         let l = Box::new(lexer::Lexer::new(tt.input.clone()));
-        let mut p = parser::Parser::new(l);
+        let mut p = parser::Parser::new(l).unwrap();
         let program = p.parse_program().unwrap();
         check_parser_errors(&p);
 
@@ -395,7 +395,7 @@ fn test_operator_precedence_parsing() {
 
     for tt in tests.iter() {
         let l = Box::new(lexer::Lexer::new(tt.input.clone()));
-        let mut p = parser::Parser::new(l);
+        let mut p = parser::Parser::new(l).unwrap();
         let program = p.parse_program().unwrap();
         check_parser_errors(&p);
 
@@ -426,7 +426,7 @@ fn test_bool() {
 
     for tt in tests.iter() {
         let l = Box::new(lexer::Lexer::new(tt.input.clone()));
-        let mut p = parser::Parser::new(l);
+        let mut p = parser::Parser::new(l).unwrap();
         let program = p.parse_program().unwrap();
         check_parser_errors(&p);
 
@@ -445,7 +445,7 @@ fn test_if_expression() {
     let input = "if (x < y) { x }".to_string();
 
     let l = Box::new(lexer::Lexer::new(input));
-    let mut p = parser::Parser::new(l);
+    let mut p = parser::Parser::new(l).unwrap();
     let program = p.parse_program().unwrap();
     check_parser_errors(&p);
 
@@ -478,7 +478,7 @@ fn test_if_esle_expression() {
     let input = "if (x < y) { x } else { y }".to_string();
 
     let l = Box::new(lexer::Lexer::new(input));
-    let mut p = parser::Parser::new(l);
+    let mut p = parser::Parser::new(l).unwrap();
     let program = p.parse_program().unwrap();
     check_parser_errors(&p);
 
@@ -509,7 +509,7 @@ fn test_if_esle_expression() {
 fn test_function_literal_parsing() {
     let input = "fn(x, y) {x + y};".to_string();
     let l = Box::new(lexer::Lexer::new(input));
-    let mut p = parser::Parser::new(l);
+    let mut p = parser::Parser::new(l).unwrap();
     let program = p.parse_program().unwrap();
     check_parser_errors(&p);
 
@@ -549,7 +549,7 @@ fn test_function_literal_parsing() {
 fn test_call_expression_parsing() {
     let input = "add(1, 2 * 3, 4 + 5);".to_string();
     let l = Box::new(lexer::Lexer::new(input));
-    let mut p = parser::Parser::new(l);
+    let mut p = parser::Parser::new(l).unwrap();
     let program = p.parse_program().unwrap();
     check_parser_errors(&p);
 

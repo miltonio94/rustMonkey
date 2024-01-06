@@ -328,7 +328,7 @@ if (5 < 10) {
     let mut l = lexer::Lexer::new(input);
 
     for (i, tt) in tests.iter().enumerate() {
-        let tok = l.next_token();
+        let tok = l.next_token().unwrap();
 
         if tok.token_type != tt.expected_type {
             panic!(
