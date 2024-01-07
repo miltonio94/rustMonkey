@@ -1,9 +1,8 @@
 use std::collections::HashMap;
 use std::fmt::Display;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum TokenType {
-    Illegal,
     EOF,
 
     // Identifier + literals
@@ -45,8 +44,7 @@ pub enum TokenType {
 impl Display for TokenType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Illegal => write!(f, ""),
-            Self::EOF => write!(f, ""),
+            Self::EOF => write!(f, "^D"),
 
             Self::Ident => write!(f, "{}", ""),
             Self::Int => write!(f, "{}", ""),
@@ -99,8 +97,7 @@ impl Token {
 impl Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.token_type {
-            TokenType::Illegal => write!(f, ""),
-            TokenType::EOF => write!(f, ""),
+            TokenType::EOF => write!(f, "^D"),
 
             TokenType::Ident => write!(f, "{}", self.literal),
             TokenType::Int => write!(f, "{}", self.literal),
@@ -136,7 +133,7 @@ impl Display for Token {
 }
 
 // TODO: refactor this function to not use a hash and return Some<Token>
-pub fn lookup_keyword(ident: &[u8]) -> TokenType {
+pub fn lookup_keyword(ident: &[u8]) -> Result<TokenType, &str> {
     let ident = String::from_utf8(ident.to_vec()).unwrap_or_default();
     let keywords = HashMap::from([
         ("fn".to_string(), TokenType::Function),
@@ -148,7 +145,10 @@ pub fn lookup_keyword(ident: &[u8]) -> TokenType {
         ("return".to_string(), TokenType::Return),
     ]);
 
-    keywords.get(&ident).unwrap_or(&TokenType::Illegal).clone()
+    keywords
+        .get(&ident)
+        .ok_or("Could not find token")
+        .map(|t| t.to_owned())
 }
 
 // TODO: once the above refactor is done we can remove this function
