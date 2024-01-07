@@ -77,12 +77,12 @@ impl Parser {
             return Err("Expected Assign".to_string());
         }
 
-        self.next_token();
+        self.next_token()?;
 
         let value = self.parse_expression(Precedence::Lowest).ok();
 
         if self.peek_token_is(&TokenType::Semicolon) {
-            self.next_token();
+            self.next_token()?;
         }
 
         Ok(statement::Let { token, name, value })
@@ -120,12 +120,12 @@ impl Parser {
     fn parse_return_statement(&mut self) -> ParserError<statement::Return> {
         let token = self.cur_token.clone();
 
-        self.next_token();
+        self.next_token()?;
 
         let return_value = self.parse_expression(Precedence::Lowest).ok();
 
         if self.peek_token_is(&TokenType::Semicolon) {
-            self.next_token();
+            self.next_token()?;
         }
 
         Ok(statement::Return {
@@ -140,7 +140,7 @@ impl Parser {
             expression: self.parse_expression(Precedence::Lowest)?,
         };
         if self.peek_token_is(&TokenType::Semicolon) {
-            self.next_token();
+            self.next_token()?;
         }
 
         Ok(stmt)
@@ -190,7 +190,7 @@ impl Parser {
                 None => return Ok(*left_exp),
             };
 
-            self.next_token();
+            self.next_token()?;
 
             left_exp = Box::new(infix(self, left_exp)?);
         }

@@ -18,8 +18,8 @@ pub fn start(io_in: io::Stdin, mut io_out: io::Stdout) -> io::Result<()> {
         let l = Box::new(lexer::Lexer::new(line));
         let mut p = match Parser::new(l) {
             Ok(p) => p,
-            Err(e) => {
-                io_out.write_all("Could not create a parser".as_bytes());
+            Err(_e) => {
+                io_out.write_all("Could not create a parser".as_bytes())?;
                 continue;
             }
         };
