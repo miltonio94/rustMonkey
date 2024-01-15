@@ -3,16 +3,15 @@ use std::vec;
 use crate::token::{self, Token, TokenType};
 
 #[derive(Debug)]
-pub struct Lexer {
-    input: vec::Vec<char>,
+pub struct Lexer<'a> {
+    input: &'a [char],
     position: usize,      // current position in input (points to current char)
     read_position: usize, // current reading position in input (after current char)
     ch: char,             // current char under examimination
 }
 
-impl Lexer {
-    pub fn new(input: &str) -> Self {
-        let input = input.chars().collect::<Vec<_>>();
+impl Lexer<'_> {
+    pub fn new<'a>(input: &'a [char]) -> Self {
         Self {
             ch: input[0],
             input,

@@ -9,7 +9,7 @@ use helper::*;
 
 #[derive(Debug)]
 pub struct Parser<'a> {
-    l: Lexer,
+    l: Lexer<'a>,
 
     cur_token: Token<'a>,
     peek_token: Token<'a>,
