@@ -4,14 +4,14 @@ use crate::token::Token;
 use std::fmt::Display;
 
 #[derive(Debug)]
-pub enum Statement {
-    Let(Let),
-    Return(Return),
-    Expression(Expression),
-    Block(Block),
+pub enum Statement<'a> {
+    Let(Let<'a>),
+    Return(Return<'a>),
+    Expression(Expression<'a>),
+    Block(Block<'a>),
 }
 
-impl Statement {
+impl Statement<'_> {
     pub fn let_statement(&self) -> Option<&Let> {
         match self {
             Self::Let(let_statement) => Some(let_statement),
@@ -41,7 +41,7 @@ impl Statement {
     }
 }
 
-impl NodeInterface for Statement {
+impl NodeInterface for Statement<'_> {
     fn token_literal(&self) -> String {
         match self {
             Self::Let(let_statement) => let_statement.token_literal(),
@@ -51,7 +51,7 @@ impl NodeInterface for Statement {
     }
 }
 
-impl Display for Statement {
+impl Display for Statement<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Expression(expr) => write!(f, "{}", expr.to_string()),
@@ -63,19 +63,19 @@ impl Display for Statement {
 }
 
 #[derive(Debug)]
-pub struct Let {
-    pub token: Token,
-    pub name: expression::Identifier,
-    pub value: Option<expression::Expression>,
+pub struct Let<'a> {
+    pub token: Token<'a>,
+    pub name: expression::Identifier<'a>,
+    pub value: Option<expression::Expression<'a>>,
 }
 
-impl NodeInterface for Let {
+impl NodeInterface for Let<'_> {
     fn token_literal(&self) -> String {
         self.token.to_string()
     }
 }
 
-impl Display for Let {
+impl Display for Let<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = String::new();
 
@@ -96,18 +96,18 @@ impl Display for Let {
 }
 
 #[derive(Debug)]
-pub struct Return {
-    pub token: Token,
-    pub return_value: Option<expression::Expression>,
+pub struct Return<'a> {
+    pub token: Token<'a>,
+    pub return_value: Option<expression::Expression<'a>>,
 }
 
-impl NodeInterface for Return {
+impl NodeInterface for Return<'_> {
     fn token_literal(&self) -> String {
         self.token.to_string()
     }
 }
 
-impl Display for Return {
+impl Display for Return<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = String::new();
 
@@ -124,36 +124,36 @@ impl Display for Return {
 }
 
 #[derive(Debug)]
-pub struct Expression {
-    pub token: Token,
-    pub expression: expression::Expression,
+pub struct Expression<'a> {
+    pub token: Token<'a>,
+    pub expression: expression::Expression<'a>,
 }
 
-impl NodeInterface for Expression {
+impl NodeInterface for Expression<'_> {
     fn token_literal(&self) -> String {
         self.token.to_string()
     }
 }
 
-impl Display for Expression {
+impl Display for Expression<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.expression.to_string())
     }
 }
 
 #[derive(Debug)]
-pub struct Block {
-    pub token: Token,
-    pub statements: Vec<Statement>,
+pub struct Block<'a> {
+    pub token: Token<'a>,
+    pub statements: Vec<Statement<'a>>,
 }
 
-impl NodeInterface for Block {
+impl NodeInterface for Block<'_> {
     fn token_literal(&self) -> String {
-        self.token.literal.clone()
+        self.token.literal.iter().collect()
     }
 }
 
-impl Display for Block {
+impl Display for Block<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = String::new();
 

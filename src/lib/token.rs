@@ -80,27 +80,27 @@ impl Display for TokenType {
 }
 
 #[derive(Debug, Clone)]
-pub struct Token {
+pub struct Token<'a> {
     pub token_type: TokenType,
-    pub literal: String,
+    pub literal: &'a [char],
 }
 
-impl Token {
-    pub fn new(token_type: TokenType, literal: String) -> Self {
-        Self {
+impl Token<'_> {
+    pub fn new<'a>(token_type: TokenType, literal: &'a [char]) -> Token<'a> {
+        Token {
             token_type,
             literal,
         }
     }
 }
 
-impl Display for Token {
+impl Display for Token<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.token_type {
             TokenType::EOF => write!(f, "^D"),
 
-            TokenType::Ident => write!(f, "{}", self.literal),
-            TokenType::Int => write!(f, "{}", self.literal),
+            TokenType::Ident => write!(f, "{}", self.literal.iter().collect::<String>()),
+            TokenType::Int => write!(f, "{}", self.literal.iter().collect::<String>()),
             TokenType::Assign => write!(f, "{}", self.token_type.to_string()),
             TokenType::Plus => write!(f, "{}", self.token_type.to_string()),
             TokenType::Minus => write!(f, "{}", self.token_type.to_string()),
@@ -133,8 +133,8 @@ impl Display for Token {
 }
 
 // TODO: refactor this function to not use a hash and return Some<Token>
-pub fn lookup_keyword(ident: &[u8]) -> Result<TokenType, &str> {
-    let ident = String::from_utf8(ident.to_vec()).unwrap_or_default();
+pub fn lookup_keyword(ident: &[char]) -> Result<TokenType, &str> {
+    let ident: String = ident.iter().collect();
     let keywords = HashMap::from([
         ("fn".to_string(), TokenType::Function),
         ("let".to_string(), TokenType::Let),
@@ -152,8 +152,8 @@ pub fn lookup_keyword(ident: &[u8]) -> Result<TokenType, &str> {
 }
 
 // TODO: once the above refactor is done we can remove this function
-pub fn is_keyword(ident: &[u8]) -> bool {
-    let ident = String::from_utf8(ident.to_vec()).unwrap_or_default();
+pub fn is_keyword(ident: &[char]) -> bool {
+    let ident: String = ident.iter().collect();
     let keywords = HashMap::from([
         ("fn".to_string(), TokenType::Function),
         ("let".to_string(), TokenType::Let),

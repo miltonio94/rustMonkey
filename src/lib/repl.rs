@@ -15,7 +15,7 @@ pub fn start(io_in: io::Stdin, mut io_out: io::Stdout) -> io::Result<()> {
         let mut line = String::new();
         scanner.read_line(&mut line)?;
 
-        let l = Box::new(lexer::Lexer::new(line));
+        let l = lexer::Lexer::new(&line);
         let mut p = match Parser::new(l) {
             Ok(p) => p,
             Err(_e) => {

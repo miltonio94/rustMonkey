@@ -8,17 +8,17 @@ use crate::token::{Token, TokenType};
 use helper::*;
 
 #[derive(Debug)]
-pub struct Parser {
-    l: Box<Lexer>,
+pub struct Parser<'a> {
+    l: Lexer,
 
-    cur_token: Token,
-    peek_token: Token,
+    cur_token: Token<'a>,
+    peek_token: Token<'a>,
     errors: Vec<String>,
 }
 
-impl Parser {
-    pub fn new(mut lex: Box<Lexer>) -> ParserError<Self> {
-        let l = lex.as_mut();
+impl Parser<'_> {
+    pub fn new<'a>(mut lex: Lexer) -> ParserError<Parser<'a>> {
+        let l = lex;
         let cur_token = l.next_token()?;
         let peek_token = l.next_token()?;
         Ok(Self {
@@ -135,11 +135,14 @@ impl Parser {
     }
 
     fn parse_expression_statement(&mut self) -> ParserError<statement::Expression> {
+        let peek_token_is_semi = self.peek_token_is(&TokenType::Semicolon);
+
         let stmt = statement::Expression {
             token: self.cur_token.clone(),
             expression: self.parse_expression(Precedence::Lowest)?,
         };
-        if self.peek_token_is(&TokenType::Semicolon) {
+
+        if peek_token_is_semi {
             self.next_token()?;
         }
 
