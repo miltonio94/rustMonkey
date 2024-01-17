@@ -8,30 +8,31 @@ use crate::token::{Token, TokenType};
 use helper::*;
 
 #[derive(Debug)]
-pub struct Parser {
-    l: Box<Lexer>,
+pub struct Parser<'a> {
+    l: &'a Lexer<'a>,
 
-    cur_token: Token,
-    peek_token: Token,
+    cur_token: Token<'a>,
+    peek_token: Token<'a>,
     errors: Vec<String>,
 }
 
-impl Parser {
-    pub fn new(mut lex: Box<Lexer>) -> Self {
-        let l = lex.as_mut();
-        let cur_token = l.next_token();
-        let peek_token = l.next_token();
-        Self {
+impl<'a> Parser<'a> {
+    pub fn new(lex: &'a mut Lexer<'a>) -> ParserError<Parser<'a>> {
+        let cur_token = lex.next_token()?;
+        let peek_token = lex.next_token()?;
+        Ok(Self {
             cur_token,
             peek_token,
             l: lex,
             errors: vec![],
-        }
+        })
     }
 
-    fn next_token(&mut self) {
+    fn next_token(&mut self) -> ParserError<()> {
         self.cur_token = self.peek_token.clone();
-        self.peek_token = self.l.next_token();
+        self.peek_token = self.l.next_token()?;
+
+        Ok(())
     }
 
     pub fn parse_program(&mut self) -> ParserError<Program> {
@@ -39,7 +40,7 @@ impl Parser {
 
         while self.cur_token.token_type != TokenType::EOF {
             program.statements.push(self.parse_statement()?);
-            self.next_token();
+            self.next_token()?;
         }
 
         Ok(program)
@@ -62,7 +63,7 @@ impl Parser {
     fn parse_let_statement(&mut self) -> ParserError<statement::Let> {
         let token = self.cur_token.clone();
 
-        if !self.expect_peek(TokenType::Ident) {
+        if !self.expect_peek(&TokenType::Ident)? {
             return Err("Expected Ident".to_string());
         }
 
@@ -71,36 +72,36 @@ impl Parser {
             value: self.cur_token.to_string(),
         };
 
-        if !self.expect_peek(TokenType::Assign) {
+        if !self.expect_peek(&TokenType::Assign)? {
             return Err("Expected Assign".to_string());
         }
 
-        self.next_token();
+        self.next_token()?;
 
         let value = self.parse_expression(Precedence::Lowest).ok();
 
         if self.peek_token_is(&TokenType::Semicolon) {
-            self.next_token();
+            self.next_token()?;
         }
 
         Ok(statement::Let { token, name, value })
     }
 
-    fn cur_token_is(&self, t: TokenType) -> bool {
-        self.cur_token.token_type == t
+    fn cur_token_is(&self, t: &TokenType) -> bool {
+        self.cur_token.token_type == *t
     }
 
     fn peek_token_is(&self, t: &TokenType) -> bool {
         self.peek_token.token_type == *t
     }
 
-    fn expect_peek(&mut self, t: TokenType) -> bool {
-        if self.peek_token_is(&t) {
-            self.next_token();
-            true
+    fn expect_peek(&mut self, t: &TokenType) -> ParserError<bool> {
+        if self.peek_token_is(t) {
+            self.next_token()?;
+            Ok(true)
         } else {
             self.peek_error(t);
-            false
+            Ok(false)
         }
     }
 
@@ -108,7 +109,7 @@ impl Parser {
         self.errors.clone()
     }
 
-    fn peek_error(&mut self, t: TokenType) {
+    fn peek_error(&mut self, t: &TokenType) {
         self.errors.push(format!(
             "expected next token to be {} but got {} instead",
             t, self.peek_token.token_type
@@ -118,12 +119,12 @@ impl Parser {
     fn parse_return_statement(&mut self) -> ParserError<statement::Return> {
         let token = self.cur_token.clone();
 
-        self.next_token();
+        self.next_token()?;
 
         let return_value = self.parse_expression(Precedence::Lowest).ok();
 
         if self.peek_token_is(&TokenType::Semicolon) {
-            self.next_token();
+            self.next_token()?;
         }
 
         Ok(statement::Return {
@@ -133,18 +134,21 @@ impl Parser {
     }
 
     fn parse_expression_statement(&mut self) -> ParserError<statement::Expression> {
+        let peek_token_is_semi = self.peek_token_is(&TokenType::Semicolon);
+
         let stmt = statement::Expression {
             token: self.cur_token.clone(),
             expression: self.parse_expression(Precedence::Lowest)?,
         };
-        if self.peek_token_is(&TokenType::Semicolon) {
-            self.next_token();
+
+        if peek_token_is_semi {
+            self.next_token()?;
         }
 
         Ok(stmt)
     }
 
-    fn prefix_parse_fns(&self, token: TokenType) -> Option<PrefixParseFn> {
+    fn prefix_parse_fns(&self, token: &TokenType) -> Option<PrefixParseFn> {
         match token {
             TokenType::Ident => Some(parse_identifier),
             TokenType::Int => Some(parse_integer_literal),
@@ -160,7 +164,7 @@ impl Parser {
         }
     }
 
-    fn infix_parse_fns(&self, token: TokenType) -> Option<InfixParseFn> {
+    fn infix_parse_fns(&self, token: &TokenType) -> Option<InfixParseFn> {
         match token {
             TokenType::Plus => Some(parse_infix_expression),
             TokenType::Minus => Some(parse_infix_expression),
@@ -177,18 +181,18 @@ impl Parser {
 
     fn parse_expression(&mut self, precedence: Precedence) -> ParserError<expression::Expression> {
         let prefix = self
-            .prefix_parse_fns(self.cur_token.token_type.clone())
-            .ok_or(format!("couldn't find function for {:#?}", self.cur_token))?;
+            .prefix_parse_fns(&self.cur_token.token_type)
+            .ok_or(&format!("couldn't find function for {:#?}", self.cur_token))?;
 
         let mut left_exp = Box::new(prefix(self)?);
 
         while !self.peek_token_is(&TokenType::Semicolon) && precedence < self.peek_precedence() {
-            let infix = match self.infix_parse_fns(self.peek_token.token_type.clone()) {
+            let infix = match self.infix_parse_fns(&self.peek_token.token_type) {
                 Some(fun) => fun,
                 None => return Ok(*left_exp),
             };
 
-            self.next_token();
+            self.next_token()?;
 
             left_exp = Box::new(infix(self, left_exp)?);
         }

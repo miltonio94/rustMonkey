@@ -10,12 +10,12 @@ pub trait NodeInterface: Display {
 }
 
 #[derive(Debug)]
-pub enum Node {
-    Statement(Statement),
-    Expression(Expression),
+pub enum Node<'a> {
+    Statement(Statement<'a>),
+    Expression(Expression<'a>),
 }
 
-impl NodeInterface for Node {
+impl NodeInterface for Node<'_> {
     fn token_literal(&self) -> String {
         match self {
             Self::Statement(statement) => statement.to_string(),
@@ -24,7 +24,7 @@ impl NodeInterface for Node {
     }
 }
 
-impl Display for Node {
+impl Display for Node<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Expression(expression) => write!(f, "{}", expression.to_string()),
@@ -34,11 +34,11 @@ impl Display for Node {
 }
 
 #[derive(Debug)]
-pub struct Program {
-    pub statements: Vec<Statement>,
+pub struct Program<'a> {
+    pub statements: Vec<Statement<'a>>,
 }
 
-impl NodeInterface for Program {
+impl NodeInterface for Program<'_> {
     fn token_literal(&self) -> String {
         if self.statements.len() > 0 {
             self.statements[0].token_literal()
@@ -48,7 +48,7 @@ impl NodeInterface for Program {
     }
 }
 
-impl Display for Program {
+impl Display for Program<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = String::new();
 

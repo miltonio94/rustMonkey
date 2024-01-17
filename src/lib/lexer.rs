@@ -1,18 +1,15 @@
-use std::vec;
-
 use crate::token::{self, Token, TokenType};
 
 #[derive(Debug)]
-pub struct Lexer {
-    input: vec::Vec<u8>,
+pub struct Lexer<'a> {
+    input: &'a [char],
     position: usize,      // current position in input (points to current char)
     read_position: usize, // current reading position in input (after current char)
-    ch: u8,               // current char under examimination
+    ch: char,             // current char under examimination
 }
 
-impl Lexer {
-    pub fn new(input: String) -> Self {
-        let input = input.as_bytes().to_vec();
+impl<'a> Lexer<'a> {
+    pub fn new(input: &'a [char]) -> Lexer<'a> {
         Self {
             ch: input[0],
             input,
@@ -23,7 +20,7 @@ impl Lexer {
 
     pub fn read_char(&mut self) {
         if self.read_position >= self.input.len() {
-            self.ch = b'\0'
+            self.ch = '\0'
         } else {
             self.ch = self.input[self.read_position]
         }
@@ -31,117 +28,105 @@ impl Lexer {
         self.read_position += 1;
     }
 
-    pub fn next_token(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Result<Token, String> {
         self.skip_whitespace();
 
         let tok = match self.ch {
-            b'=' => {
-                if self.peek_char() == b'=' {
-                    let ch = self.ch;
-                    self.read_char();
-                    Token::new(
-                        TokenType::Eq,
-                        String::from_utf8(vec![ch, self.ch]).unwrap_or_default(),
-                    )
-                } else {
-                    Token::new(
-                        TokenType::Assign,
-                        String::from_utf8(vec![self.ch]).unwrap_or_default(),
-                    )
-                }
-            }
-            b'+' => Token::new(
-                TokenType::Plus,
-                String::from_utf8(vec![self.ch]).unwrap_or_default(),
-            ),
-            b'-' => Token::new(
-                TokenType::Minus,
-                String::from_utf8(vec![self.ch]).unwrap_or_default(),
-            ),
-            b'!' => {
-                if self.peek_char() == b'=' {
-                    let ch = self.ch;
-                    self.read_char();
-                    Token::new(
-                        TokenType::NotEq,
-                        String::from_utf8(vec![ch, self.ch]).unwrap_or_default(),
-                    )
-                } else {
-                    Token::new(
-                        TokenType::Bang,
-                        String::from_utf8(vec![self.ch]).unwrap_or_default(),
-                    )
-                }
-            }
-            b'*' => Token::new(
-                TokenType::Asterisk,
-                String::from_utf8(vec![self.ch]).unwrap_or_default(),
-            ),
-            b'/' => Token::new(
-                TokenType::Slash,
-                String::from_utf8(vec![self.ch]).unwrap_or_default(),
-            ),
-            b'<' => Token::new(
-                TokenType::Lt,
-                String::from_utf8(vec![self.ch]).unwrap_or_default(),
-            ),
-            b'>' => Token::new(
-                TokenType::Gt,
-                String::from_utf8(vec![self.ch]).unwrap_or_default(),
-            ),
-            b';' => Token::new(
-                TokenType::Semicolon,
-                String::from_utf8(vec![self.ch]).unwrap_or_default(),
-            ),
-            b'(' => Token::new(
-                TokenType::LParen,
-                String::from_utf8(vec![self.ch]).unwrap_or_default(),
-            ),
-            b')' => Token::new(
-                TokenType::RParen,
-                String::from_utf8(vec![self.ch]).unwrap_or_default(),
-            ),
-            b',' => Token::new(
-                TokenType::Comma,
-                String::from_utf8(vec![self.ch]).unwrap_or_default(),
-            ),
-            b'{' => Token::new(
-                TokenType::LBrace,
-                String::from_utf8(vec![self.ch]).unwrap_or_default(),
-            ),
-            b'}' => Token::new(
-                TokenType::RBrace,
-                String::from_utf8(vec![self.ch]).unwrap_or_default(),
-            ),
+            '=' => {
+                let start_position = self.position;
 
-            b'\0' => Token::new(
+                if self.peek_char() == '=' {
+                    self.read_char();
+                    Ok(Token::new(
+                        TokenType::Eq,
+                        &self.input[start_position..self.read_position],
+                    ))
+                } else {
+                    Ok(Token::new(
+                        TokenType::Assign,
+                        &self.input[start_position..self.read_position],
+                    ))
+                }
+            }
+            '+' => Ok(Token::new(
+                TokenType::Plus,
+                &self.input[self.position..self.read_position],
+            )),
+            '-' => Ok(Token::new(
+                TokenType::Minus,
+                &self.input[self.position..self.read_position],
+            )),
+            '!' => {
+                if self.peek_char() == '=' {
+                    let start_posiont = self.position;
+                    self.read_char();
+                    Ok(Token::new(
+                        TokenType::NotEq,
+                        &self.input[start_posiont..self.read_position],
+                    ))
+                } else {
+                    Ok(Token::new(
+                        TokenType::Bang,
+                        &self.input[self.position..self.read_position],
+                    ))
+                }
+            }
+            '*' => Ok(Token::new(
+                TokenType::Asterisk,
+                &self.input[self.position..self.read_position],
+            )),
+            '/' => Ok(Token::new(
+                TokenType::Slash,
+                &self.input[self.position..self.read_position],
+            )),
+            '<' => Ok(Token::new(
+                TokenType::Lt,
+                &self.input[self.position..self.read_position],
+            )),
+            '>' => Ok(Token::new(
+                TokenType::Gt,
+                &self.input[self.position..self.read_position],
+            )),
+            ';' => Ok(Token::new(
+                TokenType::Semicolon,
+                &self.input[self.position..self.read_position],
+            )),
+            '(' => Ok(Token::new(
+                TokenType::LParen,
+                &self.input[self.position..self.read_position],
+            )),
+            ')' => Ok(Token::new(
+                TokenType::RParen,
+                &self.input[self.position..self.read_position],
+            )),
+            ',' => Ok(Token::new(
+                TokenType::Comma,
+                &self.input[self.position..self.read_position],
+            )),
+            '{' => Ok(Token::new(
+                TokenType::LBrace,
+                &self.input[self.position..self.read_position],
+            )),
+            '}' => Ok(Token::new(
+                TokenType::RBrace,
+                &self.input[self.position..self.read_position],
+            )),
+            '\0' => Ok(Token::new(
                 TokenType::EOF,
-                String::from_utf8(vec![self.ch]).unwrap_or_default(),
-            ),
+                &self.input[self.position..self.read_position],
+            )),
             _ => {
                 if is_letter(self.ch) {
                     let chunck = self.read_identifier();
                     if token::is_keyword(chunck) {
-                        return Token::new(
-                            token::lookup_keyword(chunck),
-                            String::from_utf8(chunck.into()).unwrap_or_default(),
-                        );
+                        return Ok(Token::new(token::lookup_keyword(chunck)?, chunck));
                     } else {
-                        return Token::new(
-                            TokenType::Ident,
-                            String::from_utf8(chunck.into()).unwrap_or_default(),
-                        );
+                        return Ok(Token::new(TokenType::Ident, chunck));
                     }
                 } else if is_digit(self.ch) {
-                    return Token::new(
-                        TokenType::Int,
-                        String::from_utf8(self.read_number().into()).unwrap_or_default(),
-                    );
+                    return Ok(Token::new(TokenType::Int, self.read_number()));
                 } else {
-                    return Token::new(
-                        TokenType::Illegal,
-                        String::from_utf8(vec![self.ch]).unwrap_or_default(),
-                    );
+                    return Err("Could not parse token".to_string());
                 }
             }
         };
@@ -149,7 +134,7 @@ impl Lexer {
         tok
     }
 
-    fn read_identifier(&mut self) -> &[u8] {
+    fn read_identifier(&mut self) -> &[char] {
         let position = self.position;
         while is_letter(self.ch) {
             self.read_char();
@@ -157,7 +142,7 @@ impl Lexer {
         &self.input[position..self.position]
     }
 
-    fn read_number(&mut self) -> &[u8] {
+    fn read_number(&mut self) -> &[char] {
         let position = self.position;
         while is_digit(self.ch) {
             self.read_char();
@@ -166,24 +151,24 @@ impl Lexer {
     }
 
     fn skip_whitespace(&mut self) {
-        while self.ch == b' ' || self.ch == b'\t' || self.ch == b'\n' || self.ch == b'\r' {
+        while self.ch == ' ' || self.ch == '\t' || self.ch == '\n' || self.ch == '\r' {
             self.read_char();
         }
     }
 
-    fn peek_char(&mut self) -> u8 {
+    fn peek_char(&mut self) -> char {
         if self.read_position >= self.input.len() {
-            b'\0'
+            '\0'
         } else {
             self.input[self.read_position]
         }
     }
 }
 
-fn is_letter(ch: u8) -> bool {
-    b'a' <= ch && ch <= b'z' || b'A' <= ch && ch <= b'Z' || ch == b'_'
+fn is_letter(ch: char) -> bool {
+    ch.is_alphabetic()
 }
 
-fn is_digit(ch: u8) -> bool {
-    b'0' <= ch && ch <= b'9'
+fn is_digit(ch: char) -> bool {
+    ch.is_digit(10)
 }

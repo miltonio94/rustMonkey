@@ -4,18 +4,18 @@ use crate::token::Token;
 use std::fmt::Display;
 
 #[derive(Debug)]
-pub enum Expression {
-    Identifier(Identifier),
-    IntegerLiteral(IntegerLiteral),
-    Prefix(Prefix),
-    Infix(Infix),
-    Boolean(Boolean),
-    If(If),
-    FunctionLiteral(FunctionLiteral),
-    Call(Call),
+pub enum Expression<'a> {
+    Identifier(Identifier<'a>),
+    IntegerLiteral(IntegerLiteral<'a>),
+    Prefix(Prefix<'a>),
+    Infix(Infix<'a>),
+    Boolean(Boolean<'a>),
+    If(If<'a>),
+    FunctionLiteral(FunctionLiteral<'a>),
+    Call(Call<'a>),
 }
 
-impl Expression {
+impl Expression<'_> {
     pub fn identifier(&self) -> Option<&Identifier> {
         match self {
             Self::Identifier(idnt) => Some(idnt),
@@ -73,7 +73,7 @@ impl Expression {
     }
 }
 
-impl Display for Expression {
+impl Display for Expression<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Identifier(idnt) => write!(f, "{}", idnt.to_string()),
@@ -89,75 +89,75 @@ impl Display for Expression {
 }
 
 #[derive(Debug)]
-pub struct Identifier {
-    pub token: Token,
+pub struct Identifier<'a> {
+    pub token: Token<'a>,
     pub value: String,
 }
 
-impl NodeInterface for Identifier {
+impl NodeInterface for Identifier<'_> {
     fn token_literal(&self) -> String {
         self.token.to_string()
     }
 }
 
-impl Display for Identifier {
+impl Display for Identifier<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.value)
     }
 }
 
 #[derive(Debug)]
-pub struct IntegerLiteral {
-    pub token: Token,
+pub struct IntegerLiteral<'a> {
+    pub token: Token<'a>,
     pub value: i64,
 }
 
-impl Display for IntegerLiteral {
+impl Display for IntegerLiteral<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.token.literal)
+        write!(f, "{}", self.token.literal.iter().collect::<String>())
     }
 }
 
-impl NodeInterface for IntegerLiteral {
+impl NodeInterface for IntegerLiteral<'_> {
     fn token_literal(&self) -> String {
         self.token.to_string()
     }
 }
 
 #[derive(Debug)]
-pub struct Prefix {
-    pub token: Token,
+pub struct Prefix<'a> {
+    pub token: Token<'a>,
     pub operator: String,
-    pub right: Box<Expression>,
+    pub right: Box<Expression<'a>>,
 }
 
-impl Display for Prefix {
+impl Display for Prefix<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "({}{})", self.operator, self.right.to_string())
     }
 }
 
-impl NodeInterface for Prefix {
+impl NodeInterface for Prefix<'_> {
     fn token_literal(&self) -> String {
-        format!("{}", self.token.literal)
+        self.token.literal.iter().collect()
     }
 }
 
 #[derive(Debug)]
-pub struct Infix {
-    pub token: Token,
-    pub left: Box<Expression>,
+pub struct Infix<'a> {
+    pub token: Token<'a>,
+    pub left: Box<Expression<'a>>,
     pub operator: String,
-    pub right: Box<Expression>,
+    pub right: Box<Expression<'a>>,
 }
 
-impl NodeInterface for Infix {
+impl NodeInterface for Infix<'_> {
     fn token_literal(&self) -> String {
-        format!("{}", self.token.literal)
+        self.token.literal.iter().collect()
     }
 }
 
-impl Display for Infix {
+impl Display for Infix<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -170,38 +170,38 @@ impl Display for Infix {
 }
 
 #[derive(Debug)]
-pub struct Boolean {
-    pub token: Token,
+pub struct Boolean<'a> {
+    pub token: Token<'a>,
     pub value: bool,
 }
 
-impl NodeInterface for Boolean {
+impl NodeInterface for Boolean<'_> {
     fn token_literal(&self) -> String {
-        format!("{}", self.token.literal)
+        self.token.literal.iter().collect()
     }
 }
 
-impl Display for Boolean {
+impl Display for Boolean<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.token.literal)
+        write!(f, "{}", self.token.literal.iter().collect::<String>())
     }
 }
 
 #[derive(Debug)]
-pub struct If {
-    pub token: Token,
-    pub condition: Box<Expression>,
-    pub consequence: statement::Block,
-    pub alternative: Option<statement::Block>,
+pub struct If<'a> {
+    pub token: Token<'a>,
+    pub condition: Box<Expression<'a>>,
+    pub consequence: statement::Block<'a>,
+    pub alternative: Option<statement::Block<'a>>,
 }
 
-impl NodeInterface for If {
+impl NodeInterface for If<'_> {
     fn token_literal(&self) -> String {
-        self.token.literal.clone()
+        self.token.literal.iter().collect()
     }
 }
 
-impl Display for If {
+impl Display for If<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = String::from("if");
 
@@ -219,19 +219,19 @@ impl Display for If {
 }
 
 #[derive(Debug)]
-pub struct FunctionLiteral {
-    pub token: Token,
-    pub parameters: Vec<Identifier>,
-    pub body: statement::Block,
+pub struct FunctionLiteral<'a> {
+    pub token: Token<'a>,
+    pub parameters: Vec<Identifier<'a>>,
+    pub body: statement::Block<'a>,
 }
 
-impl NodeInterface for FunctionLiteral {
+impl NodeInterface for FunctionLiteral<'_> {
     fn token_literal(&self) -> String {
-        self.token.literal.clone()
+        self.token.literal.iter().collect()
     }
 }
 
-impl Display for FunctionLiteral {
+impl Display for FunctionLiteral<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = self.token_literal();
 
@@ -251,19 +251,19 @@ impl Display for FunctionLiteral {
 }
 
 #[derive(Debug)]
-pub struct Call {
-    pub token: Token,
-    pub function: Box<Expression>,
-    pub arguments: Vec<Expression>,
+pub struct Call<'a> {
+    pub token: Token<'a>,
+    pub function: Box<Expression<'a>>,
+    pub arguments: Vec<Expression<'a>>,
 }
 
-impl NodeInterface for Call {
+impl NodeInterface for Call<'_> {
     fn token_literal(&self) -> String {
-        self.token.literal.clone()
+        self.token.literal.iter().collect()
     }
 }
 
-impl Display for Call {
+impl Display for Call<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = self.function.to_string();
 
