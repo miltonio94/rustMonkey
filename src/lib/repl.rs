@@ -1,6 +1,5 @@
 use crate::lexer;
 use crate::parser::Parser;
-use crate::token;
 use std::io::Write;
 use std::io::{self, BufRead};
 
