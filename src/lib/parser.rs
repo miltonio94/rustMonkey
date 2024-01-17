@@ -9,18 +9,17 @@ use helper::*;
 
 #[derive(Debug)]
 pub struct Parser<'a> {
-    l: Lexer<'a>,
+    l: &'a Lexer<'a>,
 
     cur_token: Token<'a>,
     peek_token: Token<'a>,
     errors: Vec<String>,
 }
 
-impl Parser<'_> {
-    pub fn new<'a>(mut lex: Lexer) -> ParserError<Parser<'a>> {
-        let l = lex;
-        let cur_token = l.next_token()?;
-        let peek_token = l.next_token()?;
+impl<'a> Parser<'a> {
+    pub fn new(lex: &'a mut Lexer<'a>) -> ParserError<Parser<'a>> {
+        let cur_token = lex.next_token()?;
+        let peek_token = lex.next_token()?;
         Ok(Self {
             cur_token,
             peek_token,

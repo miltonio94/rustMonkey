@@ -5,18 +5,18 @@ use crate::token::TokenType;
 
 pub type ParserError<T> = Result<T, String>;
 
-pub type PrefixParseFn = for<'a> fn(&mut Parser<'a>) -> ParserError<Expression<'a>>;
+pub type PrefixParseFn = for<'a> fn(&'a mut Parser<'a>) -> ParserError<Expression<'a>>;
 pub type InfixParseFn =
-    for<'a> fn(&mut Parser<'a>, Box<Expression<'a>>) -> ParserError<Expression<'a>>;
+    for<'a> fn(&'a mut Parser<'a>, Box<Expression<'a>>) -> ParserError<Expression<'a>>;
 
-pub fn parse_identifier<'a>(parser: &mut Parser<'a>) -> ParserError<Expression<'a>> {
+pub fn parse_identifier<'a>(parser: &'a mut Parser<'a>) -> ParserError<Expression<'a>> {
     Ok(Expression::Identifier(expression::Identifier {
         token: parser.cur_token.clone(),
         value: parser.cur_token.literal.iter().collect::<String>(),
     }))
 }
 
-pub fn parse_integer_literal<'a>(parser: &mut Parser<'a>) -> ParserError<Expression<'a>> {
+pub fn parse_integer_literal<'a>(parser: &'a mut Parser<'a>) -> ParserError<Expression<'a>> {
     let value: i64 = match parser.cur_token.literal.iter().collect::<String>().parse() {
         Ok(val) => val,
         Err(err) => {
@@ -35,7 +35,7 @@ pub fn parse_integer_literal<'a>(parser: &mut Parser<'a>) -> ParserError<Express
     }))
 }
 
-pub fn parse_prefix_expression<'a>(parser: &mut Parser<'a>) -> ParserError<Expression<'a>> {
+pub fn parse_prefix_expression<'a>(parser: &'a mut Parser<'a>) -> ParserError<Expression<'a>> {
     let token = parser.cur_token.clone();
     let operator = parser.cur_token.literal.iter().collect::<String>();
 
@@ -51,8 +51,8 @@ pub fn parse_prefix_expression<'a>(parser: &mut Parser<'a>) -> ParserError<Expre
 }
 
 pub fn parse_infix_expression<'a>(
-    parser: &mut Parser<'a>,
-    left: Box<Expression>,
+    parser: &'a mut Parser<'a>,
+    left: Box<Expression<'a>>,
 ) -> ParserError<Expression<'a>> {
     let token = parser.cur_token.clone();
     let operator = parser.cur_token.literal.iter().collect::<String>();
@@ -70,14 +70,14 @@ pub fn parse_infix_expression<'a>(
     }))
 }
 
-pub fn parse_boolean<'a>(parser: &mut Parser<'a>) -> ParserError<Expression<'a>> {
+pub fn parse_boolean<'a>(parser: &'a mut Parser<'a>) -> ParserError<Expression<'a>> {
     Ok(Expression::Boolean(expression::Boolean {
         token: parser.cur_token.clone(),
         value: parser.cur_token_is(&TokenType::True),
     }))
 }
 
-pub fn parse_grouped_expression<'a>(parser: &mut Parser<'a>) -> ParserError<Expression<'a>> {
+pub fn parse_grouped_expression<'a>(parser: &'a mut Parser<'a>) -> ParserError<Expression<'a>> {
     parser.next_token()?;
 
     let exp = parser.parse_expression(Precedence::Lowest)?;

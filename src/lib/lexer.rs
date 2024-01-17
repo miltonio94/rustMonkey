@@ -1,5 +1,3 @@
-use std::vec;
-
 use crate::token::{self, Token, TokenType};
 
 #[derive(Debug)]
@@ -10,8 +8,8 @@ pub struct Lexer<'a> {
     ch: char,             // current char under examimination
 }
 
-impl Lexer<'_> {
-    pub fn new<'a>(input: &'a [char]) -> Self {
+impl<'a> Lexer<'a> {
+    pub fn new(input: &'a [char]) -> Lexer<'a> {
         Self {
             ch: input[0],
             input,
@@ -35,36 +33,88 @@ impl Lexer<'_> {
 
         let tok = match self.ch {
             '=' => {
+                let start_position = self.position;
+
                 if self.peek_char() == '=' {
-                    let ch = self.ch;
                     self.read_char();
-                    Ok(Token::new(TokenType::Eq, &[ch, self.ch]))
+                    Ok(Token::new(
+                        TokenType::Eq,
+                        &self.input[start_position..self.read_position],
+                    ))
                 } else {
-                    Ok(Token::new(TokenType::Assign, &[self.ch]))
+                    Ok(Token::new(
+                        TokenType::Assign,
+                        &self.input[start_position..self.read_position],
+                    ))
                 }
             }
-            '+' => Ok(Token::new(TokenType::Plus, &[self.ch])),
-            '-' => Ok(Token::new(TokenType::Minus, &[self.ch])),
+            '+' => Ok(Token::new(
+                TokenType::Plus,
+                &self.input[self.position..self.read_position],
+            )),
+            '-' => Ok(Token::new(
+                TokenType::Minus,
+                &self.input[self.position..self.read_position],
+            )),
             '!' => {
                 if self.peek_char() == '=' {
-                    let ch = self.ch;
+                    let start_posiont = self.position;
                     self.read_char();
-                    Ok(Token::new(TokenType::NotEq, &[ch, self.ch]))
+                    Ok(Token::new(
+                        TokenType::NotEq,
+                        &self.input[start_posiont..self.read_position],
+                    ))
                 } else {
-                    Ok(Token::new(TokenType::Bang, &[self.ch]))
+                    Ok(Token::new(
+                        TokenType::Bang,
+                        &self.input[self.position..self.read_position],
+                    ))
                 }
             }
-            '*' => Ok(Token::new(TokenType::Asterisk, &[self.ch])),
-            '/' => Ok(Token::new(TokenType::Slash, &[self.ch])),
-            '<' => Ok(Token::new(TokenType::Lt, &[self.ch])),
-            '>' => Ok(Token::new(TokenType::Gt, &[self.ch])),
-            ';' => Ok(Token::new(TokenType::Semicolon, &[self.ch])),
-            '(' => Ok(Token::new(TokenType::LParen, &[self.ch])),
-            ')' => Ok(Token::new(TokenType::RParen, &[self.ch])),
-            ',' => Ok(Token::new(TokenType::Comma, &[self.ch])),
-            '{' => Ok(Token::new(TokenType::LBrace, &[self.ch])),
-            '}' => Ok(Token::new(TokenType::RBrace, &[self.ch])),
-            '\0' => Ok(Token::new(TokenType::EOF, &[self.ch])),
+            '*' => Ok(Token::new(
+                TokenType::Asterisk,
+                &self.input[self.position..self.read_position],
+            )),
+            '/' => Ok(Token::new(
+                TokenType::Slash,
+                &self.input[self.position..self.read_position],
+            )),
+            '<' => Ok(Token::new(
+                TokenType::Lt,
+                &self.input[self.position..self.read_position],
+            )),
+            '>' => Ok(Token::new(
+                TokenType::Gt,
+                &self.input[self.position..self.read_position],
+            )),
+            ';' => Ok(Token::new(
+                TokenType::Semicolon,
+                &self.input[self.position..self.read_position],
+            )),
+            '(' => Ok(Token::new(
+                TokenType::LParen,
+                &self.input[self.position..self.read_position],
+            )),
+            ')' => Ok(Token::new(
+                TokenType::RParen,
+                &self.input[self.position..self.read_position],
+            )),
+            ',' => Ok(Token::new(
+                TokenType::Comma,
+                &self.input[self.position..self.read_position],
+            )),
+            '{' => Ok(Token::new(
+                TokenType::LBrace,
+                &self.input[self.position..self.read_position],
+            )),
+            '}' => Ok(Token::new(
+                TokenType::RBrace,
+                &self.input[self.position..self.read_position],
+            )),
+            '\0' => Ok(Token::new(
+                TokenType::EOF,
+                &self.input[self.position..self.read_position],
+            )),
             _ => {
                 if is_letter(self.ch) {
                     let chunck = self.read_identifier();
